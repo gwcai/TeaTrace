@@ -1,0 +1,24 @@
+<div id="queryDlg" title="查询" class='hide'>
+<form id="queryForm" method="GET">
+<div class="form-group">
+	<#if soe?? && soe.queries?size&gt;0>
+	<#list soe.queries as query>
+		<label class="col-sm-3 control-label no-padding-right" for="name">${query.caption!''}</label>
+		<div class="col-sm-9">
+			<#if query.ctrlType?? && query.ctrlType=="TextBox">
+			<input type="text" name="${query.varName}" class="form-control">
+			<#elseif query.ctrlType?? && (query.ctrlType=="ComboBox" || query.ctrlType=="ComboBoxEx")>
+			<select name="${query.varName}" class="form-control">
+			<#list dictionaryManager.getDictionary(query.ctrlArgument, true).toArray() as option>
+				<option value="${option.key}">${option.name}</option>
+			</#list>
+			</select>
+			<#else>
+			<input type="text" name="${query.varName}" class="form-control">
+			</#if>
+		</div>
+	</#list>
+	</#if>
+</div>
+</form>
+</div>

@@ -1,0 +1,233 @@
+<style>
+<!--
+.error{
+	text-decoration: line-through;
+    color: red;
+}
+-->
+</style>
+<div id="${dialog.id}" title="${dialog.title}" class='<#if dialog.className??>${dialog.className}</#if> hide'>
+<form id="editorForm">
+<input id="id" name="id" type="hidden"></input>
+<input id="dirty" name="dirty" type="hidden"></input>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">代码</label>
+	<div class="col-sm-9">
+		<input type="text" id="dataCode" name="dataCode" placeholder="代码" class="form-control">
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">值</label>
+	<div class="col-sm-9">
+		<input type="text" id="dataValue" name="dataValue" placeholder="值" class="form-control">
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">分类</label>
+	<div class="col-sm-9">
+		<input type="text" id="catalog" name="catalog" class="form-control"></input>
+	</div>
+</div>
+</form>
+</div>
+
+<div id="importDlg" class="hide">
+<form id="importForm" enctype="multipart/form-data" target="iframeImport" method="post" action="${webroot}/service/ImportData.action?verb=put&target=importCodeData">
+<label class="col-sm-12 control-label no-padding-right" for="file">选择要要导入的Excel文件</label>
+<input type="file" name="file" class="form-control" onchange="uploadingReady=true;"></input>
+</form>
+</div>
+
+<script type="text/javascript">
+var uploadingReady = false;
+var catalogs = ['无分类'
+<#if catalogs??>
+<#list catalogs as catalog>
+	<#if catalog_has_next>,</#if>
+	"${catalog.key}"		
+</#list>
+</#if>];
+
+function doNew() {
+	// reset dialog's children
+	$("#editorForm")[0].reset();
+	
+	$("#${dialog.id}").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 300,
+		width: 400,
+		modal: true,
+		buttons: {
+			"提交": doSubmit,
+			"取消": function() {
+				$("#${dialog.id}").dialog( "close" );
+			}
+		}
+	});
+}
+
+function doEdit(id) {
+	if(id == null) return;
+	$.post("${dialog.getActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			var ent = jQuery.parseJSON(r.params.entity);
+			$("#id").val(ent.id);			
+			$("#dataCode").val(ent.dataCode);
+			$("#dataValue").val(ent.dataValue);
+			$("#catalog").val(ent.catalog);
+			$("#${dialog.id}").removeClass('hide').dialog({
+				autoOpen: true,
+				height: 300,
+				width: 400,
+				modal: true,
+				buttons: {
+					"提交": doSubmit,
+					"取消": function() {
+						$("#${dialog.id}").dialog( "close" );
+					}
+				}
+			});
+		}
+	},'json');
+}
+
+function doSubmit() {
+	if($("#id").val() == "")
+		$("#dirty").val(0); // GAIAEntity.NEW_DIRTY
+	else
+		$("#dirty").val(2); // GAIAEntity.MODIFY_DIRTY
+	
+	$.post("${dialog.updateActionUrl!''}",{entity: JSON.stringify($("#editorForm").serializeJson())},function(r){
+		if(r.success) {
+			$("#${dialog.id}").dialog( "close" );
+			window.location = window.location;
+		} 			
+		else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function doRemove(id, row) {
+	if(!confirm("确定要删除该记录吗？")) return;
+	$.post("${dialog.removeActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			$(row).remove()
+		} else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function doImport() {
+	$("#importDlg").removeClass("hide").dialog({
+		autoOpen: true,
+		height: 180,
+		width: 220,
+		modal: true,
+		buttons: {
+			"导入": function() {
+				if(!uploadingReady) {
+					alert("选择要导入的文件！")
+					return; 
+				}
+				uploadingReady = true;
+				$("#importForm").submit();
+			},
+			"关闭": function() {
+				$("#importDlg").dialog( "close" );
+			}
+		}
+	}).on("dialogclose",function(){
+		$("#importDlg").find("table").remove();
+	});
+}
+
+function afterImport() {
+	var tableColumns=[{name:"",value:""},{name:"代码",value:"dataCode"},{name:"值",value:"dataValue"},{name:"分类",value:"catalog"}];	
+	if(uploadingReady) {
+		var iframeImport = document.getElementById("iframeImport");
+		var r = $.parseJSON(iframeImport.contentWindow.document.body.innerText);
+		if(r.success) {
+			var list = $.parseJSON(r.params.list); 
+			var table = $("<table class='table'><thead><tr></tr></thead><tbody></tbody></table>");
+
+			var columns = [];
+			table.find("thead tr").append("<td></td>");
+			$(list).each(function(){
+				for(var o in this) {
+					if(columns.indexOf(o) == -1) {
+						columns.push(o);
+						table.find("thead tr").append("<td>"+o+"</td>");
+					}
+				}
+			});
+
+			var columnMapping = "<select class='form-control'>";
+			for(var i=0; i<tableColumns.length;i++) {
+				columnMapping += "<option value='"+tableColumns[i].value+"'>"+tableColumns[i].name+"</option>";
+			}
+			columnMapping += "</select>";
+			
+			table.find("thead").append("<tr><td><input type='button' value='反选'></td></tr>");			
+			for(var i=0; i<columns.length;i++) {
+				table.find("thead tr:last").append("<td source-name='"+columns[i]+"'>"+columnMapping+"</td>");
+			}
+
+			
+			$(list).each(function(){
+				table.find("tbody").append("<tr></tr>");
+				table.find("tbody tr:last").append("<td><input type='checkbox'><label></label></td>");
+				for(var i=0; i<columns.length;i++) {
+					table.find("tbody tr:last").append("<td>"+(this[columns[i]]?this[columns[i]]:+"")+"</td>");
+				}
+			});
+			
+			table.find("input[type='button']").click(function(){
+				table.find("tbody").find("input[type='checkbox']").each(function(){
+					$(this).prop("checked",!$(this).prop("checked"));
+				});
+			});
+			
+			$("#importDlg").append(table);
+			$("#importDlg").dialog("option", "width", 800 );
+			$("#importDlg").dialog("option", "height", 800 );
+			$("#importDlg").dialog("option", "buttons", {
+				"开始导入":function(){
+					var mapping = [];
+					table.find("thead tr:eq(1)").find("select").each(function(){
+						mapping.push({source:$(this).parent().attr("source-name"),target:$(this).val()});
+					});
+					table.find("tbody input:checked").each(function(){
+						$(this).parent().parent().each(function(){
+							var row = this;
+							var data = {};
+							$(this).find("td").each(function(i){
+								if(i==0) return true;						
+								if(mapping[i-1].target && "" != mapping[i-1].target) {
+									data[mapping[i-1].target] = $(this).text();
+								}
+							});
+							console.log(data);
+							data.dirty=0;
+							$.post("${dialog.updateActionUrl!''}",{entity: JSON.stringify(data)},function(r){
+								if(r.success) {
+									$(row).remove();	
+								} 			
+								else {
+									$(row).addClass("error").find("label").text(r.message);
+								}
+							},'json');
+						});
+					});
+				},
+				"关闭":function(){$("#importDlg").dialog( "close" );}
+			});
+		} else {
+			alert(r.message);
+		}
+	}
+}
+</script>
+
+<iframe id="iframeImport" name="iframeImport" style="display:none;" onload="return afterImport();"></iframe>

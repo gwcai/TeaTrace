@@ -1,0 +1,136 @@
+<script src="${webroot}/assets/js/table.js"></script>
+<script src="${webroot}/js/utility.js"></script>
+
+<script type="text/javascript">
+	window.jQuery || document.write("<script src='../assets/js/jquery.min.js'>"+"<"+"/script>");
+</script>
+
+<style>
+.table-content {
+	margin-bottom:20px;
+}
+.table-footer {
+	position:fixed;
+	bottom:0;
+	background-color:white;
+	padding-top:5px;
+	border-top: #D6D9D1 1px solid;
+	max-height:50px;
+}
+.glyphicon-search {
+	top:0;
+	cursor:pointer;
+}
+.paging_bootstrap {
+	overflow-y:scroll;
+	max-height:50px;
+}
+.box {
+	margin-bottom: 25px;
+}
+.inner-box {
+	height:240px;
+	padding: 12px;
+    border: 1px solid #e7eaec;
+    overflow-y:scroll;
+}
+.inner-box .row{
+	padding:12px;
+}
+.inner-box row span{
+	float:right;
+}
+.tabYellow{
+	color: #FFCC33;
+}
+.tabBlue{
+	color: #87b87f;
+}
+</style>
+
+<script type="text/javascript">
+var pictureList = '';
+var uploadingReady;
+var loadResult;
+var ifSaved = false;
+var imgEl;
+
+function doImportData(element){
+	console.log(element);
+	imgEl = element[0];
+	$("#importDataDlg").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 200,
+		width: 400,
+		modal: true,
+		buttons: {
+			"上传": function() {
+				if(!uploadingReady) {
+					alert("选择要上传的图片！")
+					return; 
+				}
+				uploadingReady = true;
+				pictureList += $("input[name='file']").val()+',';
+				
+				$("#pictures").prop("value",pictureList);
+				$("#importDataForm").submit();
+				$("#importDataDlg").dialog( "close" );
+			},
+			"关闭": function() {
+				$("#importDataDlg").dialog( "close" );
+			}
+		}
+	}).on("dialogclose",function(){
+		$("#importDataDlg").find("table").remove();
+	});
+}
+
+function importDataResult(){
+	if(uploadingReady){
+		var body = $(window.frames['iframeImport'].document.body);
+		if(null != body){
+			var result = JSON.parse(body.context.textContent);
+			if(result.success){
+				var items = JSON.parse(result.params.items);
+				var pics = '';
+				for(var i=0;i<items.length; i++){
+					pics += items[i].uuid + ',';
+					console.log(imgEl);
+					imgEl.src = "${webroot}/service/UploadFile.action?id="+items[i].uuid;
+					$(imgEl).prop('picture',items[i].uuid);
+				}
+				if(typeof doSave == 'function'){
+					doSave();
+				}
+			}else{
+				alert(result.message);
+			}
+		}
+	}
+}
+</script>
+
+<iframe id="iframeImport" name="iframeImport" style="display:none;" onload="return importDataResult();"></iframe>
+
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i class="ace-icon fa fa-angle-double-right"></i>
+		<#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div class="widget-header">
+		<div class="widget-toolbar">
+			
+		</div>
+	</div>
+	<br>
+</div>
+
+<!-- 信息导入对话框 -->
+<div id="importDataDlg" title="${importDlgTitle}" class ="hide">
+	<form id="importDataForm" enctype="multipart/form-data" target="iframeImport" method="post" 
+		action="${webroot}/service/UploadFile.action">
+		<label class="col-sm-12 control-label no-padding-right" for="file">选择图片</label>
+		<input type="file" name="file" class="form-control" onchange="uploadingReady=true;"></input>
+	</form>
+</div>

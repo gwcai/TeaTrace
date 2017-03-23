@@ -1,0 +1,23 @@
+<meta charset="UTF-8">
+<title>数据预览</title>
+<script type="text/javascript" src="${webroot}/js/jquery-1.7.2.js"></script>
+
+<script type='text/javascript'>
+	var result = {
+			"success":${result.success?c},
+			"params":'${result.getParams("items")!''}',
+			"message":"${result.message!''}"
+	}
+	
+	if(result.params != null)
+		$("#file-name").append(JSON.parse(result.params).name);
+	//console.log("freemarker"+'${result.getParams("data")?length}');
+	//console.log("sorce : " + '${result.getParams("data")}');
+	parent.uploadCallback(result);
+	<#if result.getParams("data")??>
+	if(typeof parent.displayUploadData == 'function')
+		parent.displayUploadData(JSON.parse('${result.getParams("data")}'));
+	</#if>
+</script>
+	<label id="file-name"></label>
+	<button onclick="window.location='${webroot!''}/Admin/oo-upload-data.jsp'">重新上传</button>

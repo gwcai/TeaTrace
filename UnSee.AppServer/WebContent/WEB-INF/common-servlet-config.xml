@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<!-- 代码数据维护 -->
+	<mapping name="SysCodeDataEntity" broker="SysCodeDataBroker" entityClass="com.unsee.gaia.biz.entities.SysCodeDataEntity" serviceClass="com.unsee.gaia.biz.services.GAIACommonService"/>
+	<!-- 系统模块数据维护 -->
+	<mapping name="SysModulesEntity" broker="SysModulesBroker" entityClass="com.unsee.gaia.biz.entities.SysModulesEntity" serviceClass="com.unsee.gaia.biz.services.GAIACommonService"/>
+	<!-- 系统菜单数据维护 -->
+	<mapping name="SysMenusEntity" broker="SysMenusBroker" entityClass="com.unsee.gaia.biz.entities.SysMenusEntity" serviceClass="com.unsee.gaia.biz.services.GAIACommonService"/>
+
+	<include file="common-servlet-config-ex.xml"/>
+</config>

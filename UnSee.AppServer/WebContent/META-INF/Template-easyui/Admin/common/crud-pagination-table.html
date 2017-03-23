@@ -1,0 +1,202 @@
+<style>
+<!--
+.table-content {
+	margin-bottom:50px;
+}
+.table-footer {
+	position:fixed;
+	bottom:0;
+	background-color:white;
+	padding-top:5px;
+	border-top: #D6D9D1 1px solid;
+	max-height:50px;
+}
+.glyphicon-search {
+	top:0;
+	cursor:pointer;
+}
+.paging_bootstrap {
+	overflow-y:scroll;
+	max-height:50px;
+}
+-->
+</style>
+<#include "query-dlg.html">
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i class="ace-icon fa fa-angle-double-right"></i>
+		<#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div class="widget-header">
+		<div class="input-group">
+			<input type="text" placeholder="过滤..." class="form-control" onchange="return tableFilter($(this).val())" onkeyup="if(event.keyCode === 27) {$(this).val('');return tableFilter('')};"></input>
+			<span class="input-group-addon glyphicon glyphicon-search" onclick="return doSearch();"></span>
+		</div>
+		<div class="widget-toolbar">
+			<#list table.toolBar.getItems() as item>
+			<a href="#" <#if item.id??>id="${item.id}"</#if>class="tool-item orange2" data-key="${item.id}" <#if item.title??>title="${item.title}"</#if>>
+				<i class="ace-icon fa ${item.icon!'fa-building-o'}"></i>
+			</a>
+			</#list>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-xs-12">
+		<!-- PAGE CONTENT BEGINS -->
+		<div class="row">
+			<div class="col-xs-12 table-content">
+				<table id="mainTable"
+					class="table table-striped table-bordered table-hover sortable">
+					<thead>
+						<tr>
+							<th class="center">
+							<#if table.multiSelection>
+								<label class="position-relative">
+									<input type="checkbox" class="ace" onclick="return toggleAll($('#mainTable tbody .ace'),$(this).prop('checked'));"> <span class="lbl"></span>
+								</label>
+							<#else>
+								序号
+							</#if>
+							</th>
+							<#list table.columns as column>
+								<th <#if column.className??>class="${column.className} <#if !column.visible>hide</#if>"</#if>>${column.name}</th>
+							</#list>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<#if table.rowTemplate??>
+						<#include table.rowTemplate>
+						<#else>
+						<#include "pagination-rows.html">
+						</#if>
+					</tbody>
+				</table>
+			</div>
+			<#if table.pagination??>
+			<div class="col-xs-12 table-footer">
+				<form method="post" id="form-pagination">
+				<input type="hidden" name="size">
+				<input type="hidden" name="index">
+				<div class="col-xs-6">
+					<div>
+						<label>显示 
+							<select size="1" name="sample-table-2_length" aria-controls="sample-table-2" onchange="return submitPagination(0,$(this).val());">
+								<option value="10" <#if table.pagination.size==10>selected="selected"</#if>>10</option>
+								<option value="20" <#if table.pagination.size==20>selected="selected"</#if>>20</option>
+								<option value="50" <#if table.pagination.size==50>selected="selected"</#if>>50</option>
+								<option value="100" <#if table.pagination.size==100>selected="selected"</#if>>100</option>
+								<option value="${table.pagination.count}"<#if table.pagination.count==table.pagination.size>selected="selected"</#if>>全部(${table.pagination.count})</option>
+							</select> 条记录
+						</label>
+					</div>
+				</div>
+				<div class="col-xs-6">
+					<div class="dataTables_paginate paging_bootstrap">
+						<ul class="pagination">
+							<li class="prev <#if table.pagination.index==0>disabled</#if>"><a href="#" <#if table.pagination.index&gt;0>onclick="return submitPagination(0,${table.pagination.size?c});"</#if>><i class="fa fa-angle-double-left"></i></a></li>
+							<li class="prev <#if table.pagination.index==0>disabled</#if>"><a href="#" <#if table.pagination.index&gt;0>onclick="return submitPagination(${(table.pagination.index-1)?c},${table.pagination.size?c});"</#if>><i class="fa fa-angle-left"></i></a></li>
+							<#list 0..table.pagination.total-1 as no>
+								<li <#if no==table.pagination.index>class="active disabled"</#if>><a href="#" onclick="return submitPagination(${no?c},${table.pagination.size?c});">${no+1}</a></li>
+							</#list>
+							<li class="next <#if table.pagination.index+1==table.pagination.total>disabled</#if>">
+								<a href="#" <#if table.pagination.index+1&lt;table.pagination.total>onclick="return submitPagination(${(table.pagination.index+1)?c},${table.pagination.size?c});"</#if>><i class="fa fa-angle-right"></i></a></li>
+							<li class="next <#if table.pagination.index+1==table.pagination.total>disabled</#if>">
+								<a href="#" <#if table.pagination.index+1&lt;table.pagination.total>onclick="return submitPagination(${(table.pagination.total-1)?c},${table.pagination.size?c});"</#if>><i class="fa fa-angle-double-right"></i></a></li>
+						</ul>
+					</div>
+				</div>
+				</form>
+			</div>			
+			</#if>
+		</div>
+	</div>
+</div>
+<#if table.dialog??>
+<#global dialog=table.dialog>
+<#if table.dialog.templatePath??>
+<#include table.dialog.templatePath>
+</#if>
+</#if>
+<script src="${webroot}/assets/js/table.js"></script>
+<script src="${webroot}/js/utility.js"></script>
+<script src="${webroot}/js/action.js"></script>
+<script type="text/javascript">
+function tableFilter(arg) {
+	$("#mainTable tbody tr").hide();
+	$("#mainTable tbody tr td").filter(":contains('"+arg+"')").parent().show();
+}
+
+function submitPagination(index,size) {
+	$("input[name='index']").val(index);
+	$("input[name='size']").val(size);
+	$("#form-pagination").submit();
+}
+
+function doSearch() {
+	$("#queryDlg input").each(function(){
+		$(this).val(getParameterByName($(this).attr("name")));
+	});
+	
+	$("#queryDlg").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 240,
+		width: 300,
+		modal: true,
+		buttons: {
+			"查询": function(){$("#queryForm").submit()},
+			"取消": function() {
+				$("#queryDlg").dialog( "close" );
+			}
+		}
+	});
+}
+
+$(document).ready(function(){
+	<#list table.toolBar.getItems() as item>
+	window.actionManager.registerAction({key:"${item.id}",cb:${item.action}});
+	</#list>
+	
+	(function($){
+		$.fn.serializeJson=function(){
+		var serializeObj={};
+		var array=this.serializeArray();
+		var str=this.serialize();
+		$(array).each(function(){
+		if(serializeObj[this.name]){
+		if($.isArray(serializeObj[this.name])){
+		serializeObj[this.name].push(this.value);
+		}else{
+			serializeObj[this.name]=[serializeObj[this.name],this.value];
+		}
+		}else{
+			serializeObj[this.name]=this.value;
+		}
+		});
+		return serializeObj;
+		};
+	})(jQuery);
+	
+
+	$(".btn-append").on('click',function(){
+		doNew(null);	
+	});
+	$(".btn-edit").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var id = uiRow.attr("data-id");
+		doEdit(id);
+	});	
+	$(".btn-remove").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var id = uiRow.attr("data-id");
+		doRemove(id, uiRow);
+	});	
+	$(".widget-toolbar").find("a.tool-item").each(function(){
+		$(this).bind("click",function(){
+			window.actionManager.doAction($(this).attr("data-key"));			
+		});
+	});
+});
+</script>

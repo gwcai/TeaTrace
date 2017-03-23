@@ -1,0 +1,197 @@
+<style>
+<!--
+.table-content {
+	margin-bottom:40px;
+}
+.table-footer {
+	position:fixed;
+	bottom:0;
+	background-color:white;
+	padding-top:5px;
+	border-top: #D6D9D1 1px solid;
+}
+.glyphicon-search {
+	top:0;
+	cursor:pointer;
+}
+span.menu-feature {
+	float:right;
+	margin-right:12px;
+}
+.dd {
+	max-width:100%;
+}
+.xs-btn-zone {
+	width:32px;
+	float:right;
+}
+-->
+</style>
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i class="ace-icon fa fa-angle-double-right"></i>
+		<#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div class="widget-header">
+		<div class="widget-toolbar">
+			<#list table.toolBar.getItems() as item>
+			<a href="#" <#if item.id??>id="${item.id}"</#if>data-action="${item.action!'unknown'}" class="tool-item orange2" <#if item.title??>title="${item.title}"</#if>>
+				<i class="ace-icon fa ${item.icon!'fa-building-o'}"></i>
+			</a>
+			</#list>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="dd dd-draghandle">
+		<#macro recruiveItem items,pid>
+		<#if items?? && items?size&gt;0>
+			<#local hasChildren=false>
+				<#list items as item>
+				<#if item.pid == pid>
+				<#if !hasChildren>
+					<#local hasChildren=true>
+					<ol class="dd-list">					
+				</#if>
+				<li class="dd-item dd2-item" data-id="1" onchange="alert('change!');">
+					<div class="dd-handle dd2-handle">
+						<i class="normal-icon ace-icon fa fa-bars blue bigger-130"></i>
+						<i class="drag-icon ace-icon fa fa-arrows bigger-125"></i>						
+					</div>
+					<div class="dd2-content" data-id="${item.id}">
+						${item.title}
+						<span class="badge menu-feature hidden-sm hidden-xs">${item.featurecode}</span>
+						<span class="badge menu-feature hidden-sm hidden-xs">${item.lkup_moduleid!''}</span>
+						<div class="hidden-sm hidden-xs btn-group">
+							<button class="btn btn-xs btn-success btn-append">
+								<i class="ace-icon fa  glyphicon glyphicon-plus bigger-120"></i>
+							</button>
+				
+							<#if table.hasPK()>
+							<button class="btn btn-xs btn-info btn-edit">
+								<i class="ace-icon fa fa-pencil bigger-120"></i>
+							</button>
+				
+							<button class="btn btn-xs btn-danger btn-remove">
+								<i class="ace-icon fa fa-trash-o bigger-120"></i>
+							</button>
+							</#if>
+						</div>
+						<div class="hidden-md hidden-lg xs-btn-zone">
+							<div class="inline position-relative">
+								<button class="btn btn-minier btn-primary dropdown-toggle"
+									data-toggle="dropdown" data-position="auto">
+									<i class="ace-icon fa fa-cog icon-only bigger-110"></i>
+								</button>
+				
+								<ul
+									class="dropdown-menu dropdown-only-icon dropdown-yellow dropdown-menu-right dropdown-caret dropdown-close">
+									<li><a href="#" class="tooltip-info" data-rel="tooltip"
+										title="" data-original-title="View"> <span class="blue">
+												<i class="ace-icon fa fa-search-plus bigger-120 btn-append"></i>
+										</span>
+									</a></li>
+				
+									<#if table.hasPK()>
+									<li><a href="#" class="tooltip-success"
+										data-rel="tooltip" title="" data-original-title="Edit">
+											<span class="green"> <i
+												class="ace-icon fa fa-pencil-square-o bigger-120"></i>
+										</span>
+									</a></li>
+				
+									<li><a href="#" class="tooltip-error" data-rel="tooltip"
+										title="" data-original-title="Delete"> <span class="red">
+												<i class="ace-icon fa fa-trash-o bigger-120"></i>
+										</span>
+									</a></li>
+									</#if>
+								</ul>
+							</div>
+						</div>
+					</div>					
+					<@recruiveItem items,item.id/>
+				</li>
+				</#if>
+				</#list>
+			<#if hasChildren>
+				</ol>
+			</#if>
+		</#if>
+		</#macro>
+		<@recruiveItem table.rows,"-1"/>
+		</div>
+	</div>
+</div>
+<#if table.dialog??>
+<#global dialog=table.dialog>
+<#if table.dialog.templatePath??>
+<#include table.dialog.templatePath>
+</#if>
+</#if>
+<script src="${webroot}/assets/js/uncompressed/jquery.nestable.js"></script>
+<script type="text/javascript">
+<#if dialog?? && dialog.id??>
+var nestableList;
+$(document).ready(function(){
+	(function($){
+		$.fn.serializeJson=function(){
+		var serializeObj={};
+		var array=this.serializeArray();
+		var str=this.serialize();
+		$(array).each(function(){
+		if(serializeObj[this.name]){
+		if($.isArray(serializeObj[this.name])){
+		serializeObj[this.name].push(this.value);
+		}else{
+			serializeObj[this.name]=[serializeObj[this.name],this.value];
+		}
+		}else{
+			serializeObj[this.name]=this.value;
+		}
+		});
+		return serializeObj;
+		};
+	})(jQuery);
+	
+
+	$(".btn-append").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var id = uiRow.attr("data-id");
+		doNew(id);	
+	});
+	$(".btn-edit").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var id = uiRow.attr("data-id");
+		doEdit(id);
+	});	
+	$(".btn-remove").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var id = uiRow.attr("data-id");
+		doRemove(id, uiRow.parent());
+	});	
+	$(".widget-toolbar").find("a.tool-item").each(function(){
+		$(this).bind("click",function(){
+			if(typeof doAction == "function")
+				doAction($(this).attr("data-action"));
+		});
+	});
+	
+	nestableList = $('.dd').nestable();
+});
+</#if>
+function findNearRowObject(fromEl) {
+	if($(fromEl).parent().length<=0) 
+		return null;
+	if($(fromEl).attr("data-id"))
+		return $(fromEl);
+	
+	return findNearRowObject($(fromEl).parent());
+}
+
+function doAction() {
+	doNew(null);
+}
+</script>

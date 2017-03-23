@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="UnSee.AppServer">
+        <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
+        <dependent-module archiveName="Gaia.Utils.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Gaia.Utils/Gaia.Utils">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="GAIA.biz.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/GAIA.biz/GAIA.biz">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Gaia.DAL.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Gaia.DAL/Gaia.DAL">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Gaia.Web.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Gaia.Web/Gaia.Web">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Tea.web.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Tea.web/Tea.web">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Tea.biz.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Tea.biz/Tea.biz">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Gaia.MyBatis.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Gaia.MyBatis/Gaia.MyBatis">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="java-output-path" value="/UnSee.AppServer/build/classes"/>
+        <property name="context-root" value="UnSee.AppServer"/>
+    </wb-module>
+</project-modules>

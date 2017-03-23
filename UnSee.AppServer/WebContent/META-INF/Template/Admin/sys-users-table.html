@@ -1,0 +1,178 @@
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i class="ace-icon fa fa-angle-double-right"></i>
+		<#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div style="text-align: right;">
+		<button id="btnAdd" class="btn btn-xs btn-success btn-append" title="注册">
+			<i class="ace-icon fa bigger-150 glyphicon glyphicon-plus">注册新用户</i>
+		</button>
+	</div>
+</div>
+<div class="row">
+	<div class="col-xs-12">
+		<!-- PAGE CONTENT BEGINS -->
+		<div class="row">
+			<div class="col-xs-12">
+				<table id="main-table"
+					class="table table-striped table-bordered table-hover">
+					<thead>
+						<tr>
+							<#if table.multiSelection?? && table.multiSelection>
+							<th class="center"><label class="position-relative">
+									<input type="checkbox" class="ace" onclick="return toggleAll($('#main-table tbody .ace'),$(this).prop('checked'));"> <span class="lbl"></span>
+							</label></th>
+							</#if>
+							<#list table.columns as column>
+								<#if column.visible>
+									<th <#if column.className??>class="${column.className}"</#if>>${column.name}</th>
+								</#if>
+							</#list>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<#if table.rows?? && table.rows?size&gt;0>
+						<#list table.rows as row>
+						<tr <#if table.hasPK()>data-id="${row[table.getPKField()]}" account="${row["account"]}"</#if>>
+							<#if table.multiSelection?? && table.multiSelection>
+							<td class="center"><label class="position-relative">
+									<input type="checkbox" class="ace"> <span class="lbl"></span>
+							</label></td>
+							</#if>
+							<#list table.columns as column>								
+								<#if column.visible>
+								<td <#if column.className??>class="${column.className!''}"</#if>>
+									<#if column.fieldName=="wechat_binding" && row[column.fieldName]?? && row[column.fieldName]?starts_with("已绑定")>
+										<a href="#" onclick="return doSendMessage('${row["name"]!""}','${row["openid"]}');"><#if row["openid"]??>${column.getDisplayValue(row[column.fieldName])}</#if></a>
+									<#else>
+										<#if row[column.fieldName]??>${column.getDisplayValue(row[column.fieldName])}</#if>
+									</#if>
+								</td>
+								</#if>
+							</#list>
+
+							<td>
+								<div class="hidden-sm hidden-xs btn-group">
+									<button class="btn btn-xs btn-success btn-append" title="添加账号">
+										<i class="ace-icon fa  glyphicon glyphicon-plus bigger-120"></i>
+									</button>
+
+									<#if table.hasPK()>
+									<button class="btn btn-xs btn-info btn-edit" title="修改账号">
+										<i class="ace-icon fa fa-pencil bigger-120"></i>
+									</button>
+
+									<button class="btn btn-xs btn-danger btn-remove" title="删除账号">
+										<i class="ace-icon fa fa-trash-o bigger-120"></i>
+									</button>
+									
+									<button class="btn btn-xs btn-success btn-reset-password" title="重置口令">
+										<i class="ace-icon fa fa-users bigger-120"></i>
+									</button>
+									</#if>
+								</div>
+							</td>
+						</tr>
+						</#list>
+						</#if>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="messageDlg" class="hide">
+	<input type="hidden" id="dlg-openId"></input>
+	<textarea id="dlg-message" class="form-control" rows="5"></textarea>
+	<div style="text-align:right;">
+		<button type="button" class="btn btn-info" onclick="return sendMessage();">发送</button>
+	</div>
+</div>
+
+<#if table.dialog??>
+<#global dialog=table.dialog>
+<#if table.dialog.templatePath??>
+<#include table.dialog.templatePath>
+</#if>
+</#if>
+<script src="${webroot}/assets/js/table.js"></script>
+<script type="text/javascript">
+<#if dialog?? && dialog.id??>
+$(document).ready(function($) {
+	(function($){
+		$.fn.serializeJson=function(){
+		var serializeObj={};
+		var array=this.serializeArray();
+		var str=this.serialize();
+		$(array).each(function(){
+		if(serializeObj[this.name]){
+		if($.isArray(serializeObj[this.name])){
+		serializeObj[this.name].push(this.value);
+		}else{
+			serializeObj[this.name]=[serializeObj[this.name],this.value];
+		}
+		}else{
+			serializeObj[this.name]=this.value;
+		}
+		});
+		return serializeObj;
+		};
+	})(jQuery);
+	
+	$(".btn-append").on('click',function(){
+		doNew(null);	
+	});
+	$(".btn-edit").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var id = uiRow.attr("data-id");
+		doEdit(id);
+	});	
+	$(".btn-remove").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var id = uiRow.attr("data-id");
+		doRemove(id, uiRow);
+	});	
+	$(".btn-reset-password").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var account = uiRow.attr("account");
+		doResetPassword(account, uiRow);
+	});	
+});
+
+function doResetPassword(account,row) {
+	var newPassword = prompt("确定重置账号["+account+"]的口令吗？\r\n输入新口令:");
+	if(!newPassword) return;
+	$.post("${webroot}/service/SysUsers.action?verb=put&target=resetPassword&behavior=encryption",{account:account,password:newPassword},function(r){
+		if(r.success) {
+			alert("账号[" + account + "]的口令已被重置。");
+		} else {
+			alert(r.message);
+		}
+	},"json");
+}
+
+function resetPassword() {
+	
+}
+</#if>
+function doSendMessage(title,openId) {
+	$("#dlg-openId").val(openId);
+	$("#messageDlg").removeClass("hide").dialog({title:title});
+}
+
+function sendMessage() {
+	$.post("${webroot}/service/WeChatAPI.action?verb=put&target=postMessageToOpenId",
+			{openId:$("#dlg-openId").val(),message:$("#dlg-message").val()},
+			function(r){
+				if(r.success) {
+					$("#messageDlg").dialog('close');
+				}
+				else {
+					alert("发送信息失败：" + r.message);
+				}
+			},'json');
+}
+</script>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CompanyEntityMapper">
+	<resultMap id="CompanyResultMapper" type="CompanyEntity">
+		<id property="id" column="id" jdbcType="INTEGER"/>
+		<result property="name" column="name" />
+		<result property="contact" column="contact" />
+		<result property="logo" column="logo" />
+		<result property="qrcode" column="qrcode" />
+		<result property="dirty" column="newflag" />
+		<result property="newFlag" column="newflag" />
+	</resultMap>
+
+	<select id="SelectCompanyByPK" parameterType="Map"
+		resultMap="CompanyResultMapper">
+		SELECT 1 as newflag,company.* FROM company WHERE id=#{id}
+	</select>
+	
+	<select id="SelectCompanys" parameterType="Map"
+		resultMap="CompanyResultMapper">
+		SELECT 1 as newflag,company.* FROM company WHERE name=#{name}
+	</select>
+	
+	<select id="SelectCompanyInfo" parameterType="Map"
+		resultMap="CompanyResultMapper">
+		SELECT 1 as newflag,company.* FROM company	
+	</select>
+
+	<insert id="InsertCompany" parameterType="CompanyEntity">
+		<selectKey order="AFTER" keyProperty="id" resultType="String">
+			SELECT @@IDENTITY;
+		</selectKey>
+		INSERT INTO company(name,contact,logo,qrcode)
+		VALUES (#{name},#{contact},#{logo},#{qrcode})
+	</insert>
+
+	<update id="UpdateCompany" parameterType="CompanyEntity">
+		UPDATE company
+		SET name=#{name},contact = #{contact},logo = #{logo},qrcode = #{qrcode}
+		WHERE id=#{id}
+	</update>
+
+	<delete id="DeleteCompany" parameterType="Map">
+		DELETE FROM company WHERE id=#{id}
+	</delete>
+</mapper>

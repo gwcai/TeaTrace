@@ -1,0 +1,213 @@
+<div id="${dialog.id}" title="${dialog.title}" class='<#if dialog.className??>${dialog.className}</#if> hide'>
+<form id="editorForm">
+<input id="id" name="id" type="hidden"></input>
+<input id="dirty" name="dirty" type="hidden"></input>
+<input id="ext2" name="ext2" type="hidden"></input>
+<input id="ext3" name="ext3" type="hidden"></input>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">姓名</label>
+	<div class="col-sm-9">
+		<input type="text" id="name" name="name" placeholder="用户的姓名" class="form-control">
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">账号</label>
+	<div class="col-sm-9">
+		<input type="text" id="account" name="account" placeholder="用户账号" class="form-control">
+	</div>
+</div>
+<div class="form-group form-password">
+	<label class="col-sm-3 control-label no-padding-right" for="name">口令</label>
+	<div class="col-sm-9">
+		<input type="password" id="passwd" name="passwd" class="form-control">
+	</div>
+</div>
+<div class="form-group form-password">
+	<label class="col-sm-3 control-label no-padding-right" for="name">确认口令</label>
+	<div class="col-sm-9">
+		<input type="password" id="passwd2" name="passwd2" class="form-control">
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name"></label>
+	<div class="col-sm-9">
+		<input type="checkbox" id="enabled">&nbsp;账号有效
+	</div>
+</div>
+<div class="form-group roles-list-zone">
+	<label class="col-sm-12 control-label no-padding-right" for="name">用户拥有的角色</label>
+	<div class="col-sm-12">
+	<table id="role-table" class="table">
+	<thead>
+		<tr>
+			<th></th>
+			<th>系统角色</th>
+			<th>备注</th>
+		</tr>
+	</thead>
+	<tbody>
+		<#if roles??>
+		<#list roles as role>
+			<tr>
+			<td><input type="checkbox" role-id="${role.id}"></td>
+			<td>${role.rolename}</td>
+			<td>${role.remark!''}</td>
+			</tr>
+		</#list>
+		</#if>
+	</tbody>
+	</table>
+	</div>
+</div>
+</form>
+</div>
+
+<script type="text/javascript">
+function doNew() {
+	// reset dialog's children
+	$("#editorForm")[0].reset();
+	$("#id").val(-1);
+	$(".roles-list-zone").hide();
+	$(".form-password").show();
+	
+	$("#${dialog.id}").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 320,
+		width: 480,
+		modal: true,
+		buttons: {
+			"提交": doSubmit,
+			"取消": function() {
+				$("#${dialog.id}").dialog( "close" );
+			}
+		}
+	});
+}
+
+function doEdit(id) {
+	if(id == null) return;
+	
+	$(".roles-list-zone").show();
+	$(".form-password").hide();
+	
+	$.post("${dialog.getActionUrl!''}",{id:id},function(r){
+		if(r.success) {			
+			var ent = jQuery.parseJSON(r.params.entity);
+			$.post("${webroot}/service/Auth.action",{verb:"list", target:"userAssignedRoles", userId: ent.id},function(r) {
+				if(r.success) {
+					var roles = r.params.list;
+
+					$("#id").val(ent.id);			
+					$("#account").val(ent.account);
+					$("#name").val(ent.name);
+					$("#enabled").prop("checked", ent.status == 1);
+					$("#specialist").prop("checked", ent.ext1 == "1");
+					$("#ext2").val(ent.ext2);
+					$("#ext3").val(ent.ext3);
+					
+					$("#${dialog.id}").removeClass('hide').dialog({
+						autoOpen: true,
+						height: 520,
+						width: 480,
+						modal: true,
+						buttons: {
+							"提交": doSubmit,
+							"取消": function() {
+								$("#${dialog.id}").dialog( "close" );
+							}
+						}
+					});
+					
+					$("#role-table tbody input[type='checkbox']").prop("checked", false);
+					$($.parseJSON(roles)).each(function(){
+						$("#role-table tbody input[role-id='"+this+"']").prop("checked", true);	
+					});							
+				} else {
+					alert(r.message);
+				}
+			},'json');
+		} else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function doVerify() {	
+	if($("#id").val() == "-1"){
+		if($("#passwd").val() != $("#passwd2").val()) {
+			alert("口令不一致");
+			$("#passwd").focus();
+			return false;
+		}
+	} 
+	
+	if($("#name").val().length <= 0) {
+		alert("用户名不允许为空");
+		$("#name").focus();
+		return false;
+	}
+	
+	if($("#account").val().length <= 0) {
+		alert("账号不允许为空");
+		$("#account").focus();
+		return false;
+	}
+
+	return true;
+}
+
+function doSubmit() {
+	if(!doVerify()) return;
+	
+	if($("#id").val() == "-1") {
+		$("#dirty").val(0); // GAIAEntity.NEW_DIRTY
+	}
+	else {
+		$("#dirty").val(2); // GAIAEntity.MODIFY_DIRTY
+	}
+	
+	var data = $("#editorForm").serializeJson();
+	data.status = $("#enabled").prop("checked")?1:0;
+	data.ext1 = $("#specialist").prop("checked")?1:0;
+	data.ext2 = $("#ext2").val();
+	data.ext3 = $("#ext3").val();
+
+	$.post("${dialog.updateActionUrl!''}",{entity: JSON.stringify(data)},function(r){
+		if(r.success) {
+			if($("#id").val() != "-1") {
+				var roleIds = [];
+				$(".roles-list-zone input:checked").each(function(){
+					if(roleIds.indexOf($(this).attr("role-id")) == -1)
+						roleIds.push($(this).attr("role-id"));
+				});
+				roleIds = (roleIds.length>0?("["+roleIds.join(",")+"]"):"[]");
+				
+				$.post("${webroot}/service/Auth.action",{verb:"put", target:"userAssignedRoles", userId:$("#id").val(), roleIds: roleIds},function(r) {
+					if(r.success) {
+						window.location = window.location;
+					} else {
+						alert(r.message);
+					}
+				},'json');
+			} else {
+				$("#${dialog.id}").dialog( "close" );
+				window.location = window.location;
+			}
+		} 			
+		else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function doRemove(id, row) {
+	if(!confirm("确定要删除该记录吗？")) return;
+	$.post("${dialog.removeActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			$(row).remove()
+		} else {
+			alert(r.message);
+		}
+	},'json');
+}
+</script>

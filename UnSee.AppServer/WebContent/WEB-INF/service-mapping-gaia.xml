@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<!-- 登录认证 -->
+	<service name="Auth.action" class="com.unsee.gaia.web.servlet.AuthServlet" auth="false"/>
+
+	<!-- 服务器信息 -->
+	<service name="ServerInfo.action" class="com.unsee.gaia.web.servlet.ServerInfoServlet" auth="false"/>	
+
+	<!-- 通用对象服务 -->
+	<service name="CommonEntity.action" class="com.unsee.gaia.web.servlet.CommonEntityServlet" />
+
+	<!-- 通用数据服务 -->
+	<service name="CommonData.action" class="com.unsee.gaia.web.servlet.CommonDataServlet" />
+
+	<!-- 系统对象服务 -->
+	<service name="SysObjects.action" class="com.unsee.gaia.web.servlet.SysObjectsServlet" />
+
+	<!-- 字典对象服务 -->
+	<service name="Dictionary.action" class="com.unsee.gaia.web.servlet.DictionaryService" />
+
+	<!-- 用户维护 -->
+	<service name="SysUsers.action" class="com.unsee.gaia.web.servlet.SysUsersServlet" />
+
+	<!-- 机构机构信息 -->
+	<service name="SysOrganization.action" class="com.unsee.gaia.web.servlet.SysOrganizationServlet" auth="false" />
+
+	<!-- 消息维护 -->
+	<service name="Message.action" class="com.unsee.gaia.web.servlet.MessageServlet" />
+
+	<!-- 系统管理服务 -->
+	<service name="Console.action" class="com.unsee.gaia.web.servlet.ConsoleServlet" />
+		
+	<!-- 导入服务 -->
+	<service name="ImportData.action" class="com.unsee.gaia.web.servlet.ImportDataServlet"/>	
+
+	<!-- 订阅服务 -->
+	<service name="Notification.action" class="com.unsee.gaia.web.servlet.NotificationServlet" auth="false"/>	
+</config>

@@ -1,0 +1,150 @@
+<style>
+<!--
+.table-content {
+	margin-bottom:50px;
+}
+.table-footer {
+	position:fixed;
+	bottom:0;
+	background-color:white;
+	padding-top:5px;
+	border-top: #D6D9D1 1px solid;
+	max-height:50px;
+}
+.glyphicon-search {
+	top:0;
+	cursor:pointer;
+}
+.paging_bootstrap {
+	overflow-y:scroll;
+	max-height:50px;
+}
+.box {
+	margin-bottom: 25px;
+}
+.inner-box {
+	height:240px;
+	padding: 12px;
+    border: 1px solid #e7eaec;
+    overflow-y:scroll;
+}
+.inner-box .row{
+	padding:12px;
+}
+.inner-box row span{
+	float:right;
+}
+-->
+</style>
+<#include "query-dlg.html">
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i class="ace-icon fa fa-angle-double-right"></i>
+		<#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div class="widget-header">
+		<div class="input-group">
+			<input type="text" placeholder="过滤..." class="form-control" onchange="return tableFilter($(this).val())" onkeyup="if(event.keyCode === 27) {$(this).val('');return tableFilter('')};"></input>
+			<span class="input-group-addon glyphicon glyphicon-search" onclick="return doSearch();"></span>
+		</div>
+		<div class="widget-toolbar">
+			<#list table.toolBar.getItems() as item>
+			<a href="#" <#if item.id??>id="${item.id}"</#if>data-action="${item.action!'unknown'}" class="tool-item orange2" <#if item.title??>title="${item.title}"</#if>>
+				<i class="ace-icon fa ${item.icon!'fa-building-o'}"></i>
+			</a>
+			</#list>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="row">
+			<#include "card-rows.html">
+		</div>		
+	</div>
+</div>
+<#if table.dialog??>
+<#global dialog=table.dialog>
+<#if table.dialog.templatePath??>
+<#include table.dialog.templatePath>
+</#if>
+</#if>
+<script src="${webroot}/assets/js/table.js"></script>
+<script src="${webroot}/js/utility.js"></script>
+<script type="text/javascript">
+function tableFilter(arg) {
+	$("#mainTable tbody tr").hide();
+	$("#mainTable tbody tr td").filter(":contains('"+arg+"')").parent().show();
+}
+
+function submitPagination(index,size) {
+	$("input[name='index']").val(index);
+	$("input[name='size']").val(size);
+	$("#form-pagination").submit();
+}
+
+function doSearch() {
+	$("#queryDlg input").each(function(){
+		$(this).val(getParameterByName($(this).attr("name")));
+	});
+	
+	$("#queryDlg").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 240,
+		width: 300,
+		modal: true,
+		buttons: {
+			"查询": function(){$("#queryForm").submit()},
+			"取消": function() {
+				$("#queryDlg").dialog( "close" );
+			}
+		}
+	});
+}
+
+<#if dialog?? && dialog.id??>
+$(document).ready(function(){
+	(function($){
+		$.fn.serializeJson=function(){
+		var serializeObj={};
+		var array=this.serializeArray();
+		var str=this.serialize();
+		$(array).each(function(){
+		if(serializeObj[this.name]){
+		if($.isArray(serializeObj[this.name])){
+		serializeObj[this.name].push(this.value);
+		}else{
+			serializeObj[this.name]=[serializeObj[this.name],this.value];
+		}
+		}else{
+			serializeObj[this.name]=this.value;
+		}
+		});
+		return serializeObj;
+		};
+	})(jQuery);
+	
+
+	$(".btn-append").on('click',function(){
+		doNew(null);	
+	});
+	$(".btn-edit").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var id = uiRow.attr("data-id");
+		doEdit(id);
+	});	
+	$(".btn-remove").on('click',function(){
+		var uiRow = findNearRowObject(this);
+		var id = uiRow.attr("data-id");
+		doRemove(id, uiRow);
+	});	
+	$(".widget-toolbar").find("a.tool-item").each(function(){
+		$(this).bind("click",function(){
+			if(typeof doAction == "function")
+				doAction($(this).attr("data-action"));
+		});
+	});
+});
+</#if>
+</script>

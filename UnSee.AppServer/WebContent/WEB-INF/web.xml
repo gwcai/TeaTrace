@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	id="WebApp_ID" version="2.4">
+
+	<display-name>安舍科技应用服务器 v1.2</display-name>
+
+	<welcome-file-list>
+		<welcome-file>login.html</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+
+	<listener>
+		<listener-class>
+			com.unsee.gaia.web.listener.StartupServletContextListener
+		</listener-class>
+	</listener>
+
+	<listener>
+		<listener-class>
+			com.unsee.gaia.web.listener.ApplicationLayerListener
+		</listener-class>
+	</listener>
+
+	<!-- Spring容器初始化 -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath*:/ioc-setup.xml</param-value>
+	</context-param>
+
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener
+		</listener-class>
+	</listener>
+	
+	<!-- GZIP过滤器 -->
+	<filter>
+    	<filter-name>GZipServletFilter</filter-name>
+    	<filter-class>com.unsee.gaia.web.filter.GZipServletFilter</filter-class>
+	</filter>
+	
+	<filter-mapping>
+    	<filter-name>GZipServletFilter</filter-name>
+    	<url-pattern>/*</url-pattern>
+	</filter-mapping>   
+	
+	<!-- RESTful action 过滤器 -->
+	<filter>
+    	<filter-name>RESTfulActionFilter</filter-name>
+    	<filter-class>com.unsee.gaia.web.filter.RESTfulActionFilter</filter-class>
+    	<init-param>
+            <param-name>service-mapping-config</param-name>
+            <param-value>WEB-INF/service-mapping-gaia.xml,WEB-INF/service-mapping-biz.xml</param-value>
+        </init-param>
+	</filter>
+	
+	<filter-mapping>
+    	<filter-name>RESTfulActionFilter</filter-name>
+    	<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+
+	<!-- 登录Debug 过滤器 -->
+	<filter>
+    	<filter-name>DebugLoginServletFilter</filter-name>
+    	<filter-class>com.unsee.gaia.web.filter.DebugLoginServletFilter</filter-class>
+    	<init-param>
+            <param-name>userName</param-name>
+            <param-value>admin</param-value>
+        </init-param>
+	</filter>
+	
+	<filter-mapping>
+    	<filter-name>DebugLoginServletFilter</filter-name>
+    	<url-pattern>*</url-pattern>
+	</filter-mapping>
+	
+	<!-- 通用对象视图查看服务 -->
+	<servlet>
+		<servlet-name>DataViewServlet</servlet-name>
+		<servlet-class>com.unsee.gaia.web.servlet.DataViewServlet
+		</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>DataViewServlet</servlet-name>
+		<url-pattern>/service/DataView.action</url-pattern>
+	</servlet-mapping>
+	
+	<!-- 上传服务 -->
+	<servlet>
+		<servlet-name>UploadService</servlet-name>
+		<servlet-class>com.unsee.tea.web.servlet.UploadFileServlet
+		</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>UploadService</servlet-name>
+		<url-pattern>/service/UploadFile.action</url-pattern>
+	</servlet-mapping>
+
+	<!-- 下载服务 -->
+	<servlet>
+		<servlet-name>DownloadService</servlet-name>
+		<servlet-class>com.unsee.gaia.web.servlet.DownloadServlet
+		</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>DownloadService</servlet-name>
+		<url-pattern>/service/DownloadFile.action</url-pattern>
+	</servlet-mapping>  	
+
+</web-app>

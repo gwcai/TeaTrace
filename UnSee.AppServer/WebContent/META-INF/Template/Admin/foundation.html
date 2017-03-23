@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="${language}">
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta charset="utf-8" />
+		<title>${title}</title>
+
+		<meta name="description" content="overview &amp; stats" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+		<!-- bootstrap & fontawesome -->
+		<link rel="stylesheet" href="${webroot}/assets/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="${webroot}/assets/css/font-awesome.min.css" />
+
+		<!-- page specific plugin styles -->
+		<link rel="stylesheet" href="${webroot}/assets/css/jquery-ui.min.css" />
+
+		<!-- text fonts -->
+		<link rel="stylesheet" href="${webroot}/assets/css/ace-fonts.css" />
+
+		<!-- ace styles -->
+		<link rel="stylesheet" href="${webroot}/assets/css/ace.min.css" />
+
+		<!--[if lte IE 9]>
+			<link rel="stylesheet" href="${webroot}/assets/css/ace-part2.min.css" />
+		<![endif]-->
+		<link rel="stylesheet" href="${webroot}/assets/css/ace-skins.min.css" />
+		<link rel="stylesheet" href="${webroot}/assets/css/ace-rtl.min.css" />
+
+		<!--[if lte IE 9]>
+		  <link rel="stylesheet" href="${webroot}/assets/css/ace-ie.min.css" />
+		<![endif]-->
+
+		<link rel="stylesheet" href="${webroot}/assets/css/skins/thinmonkey/admin.css" />
+		<!-- inline styles related to this page -->
+
+		<!-- ace settings handler -->
+		<script src="${webroot}/assets/js/ace-extra.min.js"></script>
+
+		<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+
+		<!--[if lte IE 8]>
+		<script src="${webroot}/assets/js/html5shiv.js"></script>
+		<script src="${webroot}/assets/js/respond.min.js"></script>
+		<![endif]-->
+	</head>
+	<#assign userId = currentUser.id>
+	<body class="no-skin">
+		<!-- #section:basics/navbar.layout -->
+		<div id="navbar" class="navbar navbar-default">
+			<script type="text/javascript">
+				try{ace.settings.check('navbar' , 'fixed')}catch(e){}
+			</script>
+
+			<div class="navbar-container" id="navbar-container">
+				<!-- #section:basics/sidebar.mobile.toggle -->
+				<button type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler">
+					<span class="sr-only">边栏</span>
+
+					<span class="icon-bar"></span>
+
+					<span class="icon-bar"></span>
+
+					<span class="icon-bar"></span>
+				</button>
+
+				<!-- /section:basics/sidebar.mobile.toggle -->
+				<div class="navbar-header pull-left">
+					<!-- #section:basics/navbar.layout.brand -->
+					<a href="#" class="navbar-brand">
+						<small>
+							<i class="fa fa-leaf"></i>
+							${variables.companyName} ${variables.applicationName2}
+						</small>
+					</a>
+
+					<!-- /section:basics/navbar.layout.brand -->
+
+					<!-- #section:basics/navbar.toggle -->
+
+					<!-- /section:basics/navbar.toggle -->
+				</div>
+
+				<!-- #section:basics/navbar.dropdown -->
+				<div class="navbar-buttons navbar-header pull-right" role="navigation">
+					<ul class="nav ace-nav">
+						<!-- #section:basics/navbar.user_menu -->
+						<li class="light-blue">
+							<a data-toggle="dropdown" href="#" class="dropdown-toggle">
+								<img class="nav-user-photo" src="${webroot}/assets/avatars/user.jpg" alt="Jason's Photo" />
+								<span class="user-info">
+									<#if currentUser??><small>您好,</small>${currentUser.name}<#else>尚未登录</#if>
+								</span>
+
+								<i class="ace-icon fa fa-caret-down"></i>
+							</a>
+
+							<ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+								<li>
+									<a href="#" onclick="return showUserProfile();">
+										<i class="ace-icon fa fa-cog"></i>
+										账号设置
+									</a>
+								</li>
+
+								<li class="divider"></li>
+
+								<li>
+									<a href="#" onclick="return doLogout();">
+										<i class="ace-icon fa fa-power-off"></i>
+										注销
+									</a>
+								</li>
+							</ul>
+						</li>
+
+						<!-- /section:basics/navbar.user_menu -->
+					</ul>
+				</div>
+
+				<!-- /section:basics/navbar.dropdown -->
+			</div><!-- /.navbar-container -->
+		</div>
+
+		<!-- /section:basics/navbar.layout -->
+		<div class="main-container" id="main-container">
+			<script type="text/javascript">
+				try{ace.settings.check('main-container','fixed')}catch(e){}
+			</script>
+
+			<!-- #section:basics/sidebar -->
+			<div id="sidebar" class="sidebar responsive">
+				<script type="text/javascript">
+					try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
+				</script>
+
+				<div class="sidebar-shortcuts" id="sidebar-shortcuts">
+					<div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
+						<button class="btn btn-success">
+							<i class="ace-icon fa fa-signal"></i>
+						</button>
+
+						<button class="btn btn-info">
+							<i class="ace-icon fa fa-pencil"></i>
+						</button>
+
+						<!-- #section:basics/sidebar.layout.shortcuts -->
+						<button class="btn btn-warning">
+							<i class="ace-icon fa fa-users"></i>
+						</button>
+
+						<button class="btn btn-danger">
+							<i class="ace-icon fa fa-cogs"></i>
+						</button>
+
+						<!-- /section:basics/sidebar.layout.shortcuts -->
+					</div>
+
+					<div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
+						<span class="btn btn-success"></span>
+
+						<span class="btn btn-info"></span>
+
+						<span class="btn btn-warning"></span>
+
+						<span class="btn btn-danger"></span>
+					</div>
+				</div><!-- /.sidebar-shortcuts -->
+
+				<ul class="nav nav-list">
+					<li class="active">
+						<a href="index.jsp">
+							<i class="menu-icon fa fa-tachometer"></i>
+							<span class="menu-text">首页</span>
+						</a>
+						<b class="arrow"></b>
+					</li>
+					<#macro recruiveMenu children>
+						<#if children?? && children?size&gt;0>							
+							<#list children as child>
+							<li class="icon-plus">
+								<a 
+									<#if child.expression?? && child.expression?length&gt;0>
+									<#assign inlineTemplate=child.expression?interpret>
+									url="<@inlineTemplate/><#if child.featureCode??>?featureCode=${child.featureCode}</#if>"
+									onclick="return openURL($(this),'id${child.id}');"
+									<#else>
+									class="dropdown-toggle"
+									</#if>>
+									<i class="menu-icon fa fa-caret-right"></i>
+									<span class="menu-text">${child.title}</span>
+									<#if child.children?? && child.children?size&gt;0>
+									<b class="arrow fa fa-angle-down"></b>
+									</#if>
+								</a>
+								<#if child.children?? && child.children?size&gt;0>
+									<ul class="submenu">
+									<b class="arrow"></b>
+									<@recruiveMenu child.children/>
+									</ul>
+								</#if>
+							</li>
+							</#list>
+						</#if>
+					</#macro>
+					<#if menus??><@recruiveMenu menus/></#if>
+				</ul><!-- /.nav-list -->
+
+				<!-- #section:basics/sidebar.layout.minimize -->
+				<div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">
+					<i class="ace-icon fa fa-angle-double-left" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>
+				</div>
+
+				<!-- /section:basics/sidebar.layout.minimize -->
+				<script type="text/javascript">
+					try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
+				</script>
+			</div>
+
+			<!-- /section:basics/sidebar -->
+			<div class="main-content">
+				<div class="page-content">
+					<ul class="nav nav-tabs" role="tablist" id="tab-header">
+					</ul>	
+					<div class="tab-content" id="tab-body">
+                	</div>
+            </div>				
+				</div>
+			</div><!-- /.main-content -->
+
+			<div class="footer">
+				<div class="footer-inner">
+					<!-- #section:basics/footer -->
+					<div class="footer-content">
+						<span class="bigger-120">
+							<span class="blue bolder">${variables.companyName}</span>
+							${variables.applicationName2} &copy; 2014-2015
+						</span>
+					</div>
+
+					<!-- /section:basics/footer -->
+				</div>
+			</div>
+
+			<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+				<i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
+			</a>
+		</div><!-- /.main-container -->
+
+		<#include "user-profile.html">
+
+		<!-- basic scripts -->
+
+		<!--[if !IE]> -->
+		<script type="text/javascript">
+			window.jQuery || document.write("<script src='${webroot}/assets/js/jquery.min.js'>"+"<"+"/script>");
+		</script>
+		<!-- <![endif]-->
+
+		<!--[if IE]>
+		<script type="text/javascript">
+		 window.jQuery || document.write("<script src='${webroot}/assets/js/jquery1x.min.js'>"+"<"+"/script>");
+		</script>
+		<![endif]-->
+		<script type="text/javascript">
+			if('ontouchstart' in document.documentElement) document.write("<script src='${webroot}/assets/js/jquery.mobile.min.js'>"+"<"+"/script>");
+		</script>
+		<script src="${webroot}/assets/js/bootstrap.min.js"></script>
+
+		<!-- page specific plugin scripts -->
+
+		<script src="${webroot}/assets/js/locale/jquery.ui.datepicker-zh-CN.js"></script>
+
+		<!--[if lte IE 8]>
+		  <script src="${webroot}/assets/js/excanvas.min.js"></script>
+		<![endif]-->
+		<script src="${webroot}/assets/js/jquery-ui.min.js"></script>
+		<script src="${webroot}/assets/js/jquery.ui.touch-punch.min.js"></script>
+		<script src="${webroot}/assets/js/jquery.easypiechart.min.js"></script>
+		<script src="${webroot}/assets/js/jquery.sparkline.min.js"></script>
+		<script src="${webroot}/assets/js/flot/jquery.flot.min.js"></script>
+		<script src="${webroot}/assets/js/flot/jquery.flot.pie.min.js"></script>
+		<script src="${webroot}/assets/js/flot/jquery.flot.resize.min.js"></script>
+
+		<!-- ace scripts -->
+		<script src="${webroot}/assets/js/ace-elements.min.js"></script>
+		<script src="${webroot}/assets/js/ace.min.js"></script>
+
+		<!-- inline scripts related to this page -->
+		<script type="text/javascript">
+			var windowMngr = [];
+			
+			jQuery(function($) {
+				$(".main-container").height($(window).height() - $("#navbar").height() - $(".footer").height());				
+				if(typeof aceReady == 'function') aceReady($);
+				$(window).resize(function(){
+					$(".main-container").height($(document).height() - $("#navbar").height() - $(".footer").height());
+				});
+			});
+			
+			function doLogout() {
+				$.post("${webroot}/service/Auth.action?verb=get&target=logout",{account:"${currentUser.account}"},function(r){
+					if(r.success) {
+						window.location="${webroot}/Admin/login.jsp";
+					}
+				},'json')
+			}
+			
+			function openURL(obj,id) {
+				var idRef = "#" + id;
+				if(!windowMngr[idRef]) {
+					$("#tab-header").append("<li role=\"presentation\">"+
+						"<a href=\"" + idRef + "\" role=\"tab\" data-toggle=\"tab\">"+
+						$(obj).find(".menu-text").text()+
+						"<button class=\"close\" type=\"button\" title=\"关闭\" onclick=\"return closeTab('"+idRef+"');\">×</button></a></li>");
+					
+					$("#tab-body").append("<div role=\"tabpanel\" class=\"tab-pane\" data-target=\"tab\" id=\""+id+"\">"+
+						"<iframe src='"+$(obj).attr("url")+"'></iframe></div>");
+					
+					windowMngr[idRef]=idRef;
+				}
+				
+				$("#tab-header").find('a[href='+idRef+']').tab('show');
+			}
+			
+			function closeTab(idRef) {
+				var removeActiveOne = $("#tab-body").find(idRef).hasClass("active");
+				
+				$("#tab-body").find(idRef).remove();
+				$("#tab-header").find('a[href='+idRef+']').parent().remove();
+				delete windowMngr[idRef];
+				
+				if(removeActiveOne) {
+					$('#tab-header a:last').tab('show');
+				}
+			}
+		</script>
+
+		<link rel="stylesheet" href="${webroot}/assets/css/ace.onpage-help.css" />
+
+		<script type="text/javascript"> ace.vars['base'] = '..'; </script>
+		<script src="${webroot}/assets/js/ace/ace.onpage-help.js"></script>
+		<script src="${webroot}/js/utility.js"></script>
+	</body>
+</html>

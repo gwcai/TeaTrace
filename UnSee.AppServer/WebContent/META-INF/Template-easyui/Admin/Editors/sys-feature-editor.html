@@ -1,0 +1,144 @@
+<div id="${dialog.id}" title="${dialog.title}" class='<#if dialog.className??>${dialog.className}</#if> hide'>
+<form id="editorForm">
+<input id="id" name="id" type="hidden"></input>
+<input id="dirty" name="dirty" type="hidden"></input>
+<div class="form-group clearfix">
+	<label class="col-sm-3 control-label no-padding-right" for="name">功能分类</label>
+	<div class="col-sm-9">
+		<input type="text" id="category" name="category" placeholder="自定义分类" class="form-control">
+	</div>
+</div>
+<div class="form-group clearfix">
+	<label class="col-sm-3 control-label no-padding-right" for="name">所属模块</label>
+	<div class="col-sm-9">
+		<select id="module" name="module" class="form-control">
+		<#list modules as module>
+			<option value="${module.key}">${module.name}</option>
+		</#list>
+		</select>
+	</div>
+</div>
+<div class="form-group clearfix">
+	<label class="col-sm-3 control-label no-padding-right" for="name">功能名称</label>
+	<div class="col-sm-9">
+		<input type="text" id="name" name="name" placeholder="功能名称" class="form-control">
+	</div>
+</div>
+<div class="form-group clearfix">
+	<label class="col-sm-3 control-label no-padding-right" for="name">功能代码</label>
+	<div class="col-sm-9">
+		<input type="text" id="code" name="code" placeholder="功能代码，全局唯一" class="form-control">
+	</div>
+</div>
+<div class="form-group clearfix">
+	<label class="col-sm-3 control-label no-padding-right" for="name">表达式</label>
+	<div class="col-sm-9">
+		<input type="text" id="expression" name="expression" placeholder="URL、功能串表达式" class="form-control">
+	</div>
+</div>
+<div class="form-group clearfix">
+	<label class="col-sm-3 control-label no-padding-right" for="name"></label>
+	<div class="col-sm-9">
+		<input type="checkbox" id="enabled" name="enabled">&nbsp;有效
+	</div>
+</div>
+</form>
+</div>
+
+<script type="text/javascript">
+function doNew() {
+	// reset dialog's children
+	$("#editorForm")[0].reset();
+	$("#id").val(-1);
+	
+	$("#${dialog.id}").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 340,
+		width: 400,
+		modal: true,
+		buttons: {
+			"提交": doSubmit,
+			"取消": function() {
+				$("#${dialog.id}").dialog( "close" );
+			}
+		}
+	});
+}
+
+function doEdit(id) {
+	if(id == null) return;
+	$.post("${dialog.getActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			var ent = jQuery.parseJSON(r.params.entity);
+			$("#id").val(ent.id);
+			$("#category").val(ent.category);
+			$("#code").val(ent.code);
+			$("#name").val(ent.name);
+			$("#expression").val(ent.expression);
+			$("#module").val(ent.module);
+			$("#enabled").prop("checked", ent.enabled);
+			
+			$("#${dialog.id}").removeClass('hide').dialog({
+				autoOpen: true,
+				height: 340,
+				width: 400,
+				modal: true,
+				buttons: {
+					"提交": doSubmit,
+					"取消": function() {
+						$("#${dialog.id}").dialog( "close" );
+					}
+				}
+			});
+		}
+	},'json');
+}
+
+function doSubmit() {
+	if($("#id").val() == "-1")
+		$("#dirty").val(0); // GAIAEntity.NEW_DIRTY
+	else
+		$("#dirty").val(2); // GAIAEntity.MODIFY_DIRTY
+	
+	var data = $("#editorForm").serializeJson();
+	data.enabled = $("#enabled").prop("checked");
+	$.post("${dialog.updateActionUrl!''}",{entity: JSON.stringify(data)},function(r){
+		if(r.success) {
+			$("#${dialog.id}").dialog( "close" );
+			window.location = window.location;
+		} 			
+		else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function doRemove(id, row) {
+	if(!confirm("确定要删除该记录吗？")) return;
+	$.post("${dialog.removeActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			$(row).remove()
+		} else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function inflactDetail(target,id) {
+	$.post("${webroot}/service/Auth.action?verb=list&target=featureAssignToRoles",{featureId:id},function(r){
+		if(r.success) {
+			var html = "";
+			$(JSON.parse(r.params.list)).each(function(){
+				if(html.length>0)
+					html += ",";
+				else
+					html += "拥有该功能的角色：";
+				html += this.rolename;
+			});
+			
+			$(target).append(html);
+		}
+	},'json');
+}
+
+</script>

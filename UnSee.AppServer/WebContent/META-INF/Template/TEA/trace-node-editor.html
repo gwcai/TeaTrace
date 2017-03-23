@@ -1,0 +1,93 @@
+<div class="row" id="trace" >
+	<div class="col-md-6">
+		<input type="hidden" id="traceDirty" v-model="dirty" />
+		<div class="row">
+			<div class="form-group">
+				<label class="col-sm-2">记录时间</label>
+				<div class="col-sm-8">
+					<input class="datepicker form-control" size="16" type="text"
+						name="time" value="${traceEnt.time!''}" />
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group">
+				<label class="col-sm-2">天气信息</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="weather"
+						v-model="weather" />
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group">
+				<label class="col-sm-2">温度信息</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="temperature"
+						v-model="temperature" />
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group">
+				<label class="col-sm-2">录入人</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="creator"
+						v-model="creator" />
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<label>添加图片</label>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="row">
+			<div class="form-group">
+				<label class="col-sm-2">湿度信息</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="dampness"
+						v-model="dampness" />
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group">
+				<label class="col-sm-2">位置信息</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="location"
+						v-model="location" />
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group">
+				<label class="col-sm-2">批次信息</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="batch"
+						v-model="batch" />
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group">
+				<label class="col-sm-2">经度</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="longitude"
+						v-model="longitude" />
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group">
+				<label class="col-sm-2">纬度</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="latitude"
+						v-model="latitude" />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

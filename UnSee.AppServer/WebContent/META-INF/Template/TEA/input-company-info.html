@@ -1,0 +1,103 @@
+<script src="${webroot}/vue/vue.js"></script>
+
+<#include "import-page-header.html">
+
+<style>
+	.row{
+		margin-bottom:10px;
+	}
+	img{
+		width:200px;
+	}
+</style>
+
+<form id="comForm" action="">
+	<div id="company" class="panel panel-info">
+		<div class="panel-heading">
+			<h3 class="panel-title">录入公司信息</h3>
+		</div>
+		<div class="panel-body">
+			<input type="hidden" id="entId" name="entId" value="" v-model="id"/>
+			<input type="hidden" id="pictureId" value=""/>
+			<input type="hidden" id="dirty" value="" v-model="dirty"/>
+			<div class="col-md-4">
+				<div class="row">
+					<div class="input-group">
+						<label class="input-group-addon">公司名称</label>
+						<input type="index" v-model="name"/>
+					</div>
+				</div>
+				<div class="row">
+					<div class="input-group">
+						<label class="input-group-addon">联系方式</label>
+						<input type="index" v-model="contact"/>
+					</div>
+				</div>
+				<div class="row">
+					<button class="btn btn-success" onclick="return doSave();">保存</button>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="row">
+					<p>公司Logo</p>
+					<img id="logo" picture="${entity.logo!''}" onclick="return doImportData($(this));"
+					<#if entity?? && entity.logo??> src="${webroot}/service/UploadFile.action?id=${entity.logo}"
+					<#else> src="${webroot}/images/picture.png"
+					</#if>/>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="row">
+					<p>公众号二维码</p>
+					<img id="qrcode" picture="${entity.qrcode!''}" onclick="return doImportData($(this));"
+					<#if entity?? && entity.qrcode??> src="${webroot}/service/UploadFile.action?id=${entity.qrcode}"
+					<#else> src="${webroot}/images/picture.png"
+					</#if>/>
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+
+
+<script>
+	var entity = {
+		id: '${entity.id!''}',
+		name: '${entity.name!''}',
+		logo: '${entity.logo!''}',
+		qrcode: '${entity.qrcode!''}',
+		contact: '${entity.contact!''}',
+		dirty: '${entity.dirty!''}'
+	}
+	
+	var vm = new Vue({
+		el:'#company',
+		data:entity
+	});
+	
+	$(function(){
+		$("#logo").prop('picture','${entity.logo!''}');
+		$("#qrcode").prop('picture','${entity.qrcode!''}');
+	});
+	
+	function doSave(){
+		if(entity.dirty == 1 || entity.dirty == 2){
+			entity.dirty = 2;
+		}else{
+			entity.dirty = 0;
+		}
+		
+		entity.logo = $("#logo")[0].picture;
+		entity.qrcode = $("#qrcode")[0].picture;
+		
+		$.post("${webroot}/service/CommonEntity.action?verb=put&en=CompanyEntity",{'entity':JSON.stringify(entity)},function(r){
+			if(r.success){
+				entity = JSON.parse(r.params.entity);
+				$("#entId").prop('value',entity.id);
+				$("#comForm")[0].submit();
+			}else{
+				alert(r.message);
+			}
+		},'json');
+	}
+</script>

@@ -1,0 +1,112 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	$(".btn-append").on('click',function(){
+		doNew(null);	
+	});
+	$(".btn-edit").on('click',function(){
+		var uiRow = $(this).parent().parent().parent();
+		var id = uiRow.children("td[data-id]").attr("data-id");
+		doEdit(id);
+	});	
+	$(".btn-remove").on('click',function(){
+		var uiRow = $(this).parent().parent().parent();
+		var id = uiRow.children("td[data-id]").attr("data-id");
+		doRemove(id, uiRow);
+	});	
+});
+
+function doNew() {
+	window.location="sys-objects-editor.jsp?id=";
+}
+
+function doEdit(id) {
+	if(id == null) return;
+	window.location="sys-objects-editor.jsp?id=" + id;
+}
+
+function doRemove(id, row) {
+	if(!confirm("确定要删除该记录吗？")) return;
+	$.post("${table.dialog.removeActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			$(row).remove()
+		} else {
+			alert(r.message);
+		}
+	},'json');
+}
+</script>
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i class="ace-icon fa fa-angle-double-right"></i>
+		<#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div style="text-align: right;">
+		<button id="btnAdd" class="btn btn-xs btn-success btn-append" title="添加">
+			<i class="ace-icon fa bigger-150 glyphicon glyphicon-plus"></i>
+		</button>
+	</div>
+</div>
+<div class="row">
+	<div class="col-xs-12">
+		<!-- PAGE CONTENT BEGINS -->
+		<div class="row">
+			<div class="col-xs-12">
+				<table id="main-table"
+					class="table table-striped table-bordered table-hover sortable">
+					<thead>
+						<tr>
+							<th class="center"><label class="position-relative">
+									<input type="checkbox" class="ace" onclick="return toggleAll($('#main-table tbody .ace'),$(this).prop('checked'));"> <span class="lbl"></span>
+							</label></th>
+							<#list table.columns as column>
+								<th <#if column.className??>class="${column.className} <#if !column.visible>hide</#if>"</#if>>${column.name}</th>
+							</#list>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<#if table.rows?? && table.rows?size&gt;0>
+						<#list table.rows as row>
+						<tr>
+							<td class="center"><label class="position-relative">
+									<input type="checkbox" class="ace"> <span class="lbl"></span>
+							</label></td>
+
+							<#list table.columns as column>								
+								<td <#if column.className??>class="${column.className} <#if !column.visible>hide</#if>"</#if> <#if column.pk?? && column.pk>data-id="${row[column.fieldName]}"</#if>><#if row[column.fieldName]??>${column.getDisplayValue(row[column.fieldName])}</#if></td>								
+							</#list>
+
+							<td>
+								<div class="hidden-sm hidden-xs btn-group">
+									<button class="btn btn-xs btn-success btn-append">
+										<i class="ace-icon fa  glyphicon glyphicon-plus bigger-120"></i>
+									</button>
+
+									<#if table.hasPK()>
+									<button class="btn btn-xs btn-info btn-edit">
+										<i class="ace-icon fa fa-pencil bigger-120"></i>
+									</button>
+
+									<button class="btn btn-xs btn-danger btn-remove">
+										<i class="ace-icon fa fa-trash-o bigger-120"></i>
+									</button>
+									</#if>
+								</div>
+							</td>
+						</tr>
+						</#list>
+						</#if>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<#if table.dialog??>
+<#global dialog=table.dialog>
+<#if table.dialog.templatePath??>
+<#include table.dialog.templatePath>
+</#if>
+</#if>
+<script src="${webroot}/assets/js/table.js"></script>

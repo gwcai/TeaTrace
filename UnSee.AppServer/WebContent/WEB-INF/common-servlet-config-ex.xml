@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<mapping name="CompanyEntity" broker="CompanyBroker" entityClass="com.unsee.tea.biz.entities.CompanyEntity" serviceClass="com.unsee.tea.biz.services.CompanyService"/>
+	
+	<mapping name="TeaTraceEntity" broker="TeaTraceBroker" entityClass="com.unsee.tea.biz.entities.TeaTraceEntity" serviceClass="com.unsee.tea.biz.services.TeaTraceService"/>
+</config>

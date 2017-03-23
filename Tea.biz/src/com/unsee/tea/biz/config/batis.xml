@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<typeAlias alias="TeaSaleEntity" type="com.unsee.tea.biz.entities.TeaSaleEntity" />
+		<typeAlias alias="TeaTraceEntity" type="com.unsee.tea.biz.entities.TeaTraceEntity" />
+		<typeAlias alias="CompanyEntity" type="com.unsee.tea.biz.entities.CompanyEntity" />
+	</typeAliases>
+
+	<typeHandlers>
+		<typeHandler handler="com.unsee.gaia.dal.typehandlers.DateToIntTypeHandler"
+			javaType="java.util.Date" jdbcType="INTEGER" />
+		<typeHandler handler="com.unsee.gaia.dal.typehandlers.BooleanToString"
+			javaType="java.lang.Boolean" jdbcType="CHAR" />
+		<typeHandler javaType="String" jdbcType="CHAR"
+			handler="com.unsee.gaia.dal.typehandlers.TrimStringTypeHandler" />
+	</typeHandlers>
+
+	<environments default="${gaia.env}">
+		<environment id="sqlserver">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver"
+					value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+				<property name="url"
+					value="jdbc:sqlserver://${gaia.host};Database=${gaia.database}" />
+				<property name="username" value="${gaia.username}" />
+				<property name="password" value="${gaia.password}" />
+				<property name="poolPingQuery" value="SELECT 1" />
+              	<property name="poolPingEnabled" value="${gaia.enablePing}" />								
+				<property name="poolMaximumActiveConnections" value="${gaia.maxActiveConnections}" />
+				<property name="poolMaximumIdleConnections" value="${gaia.maxIdleConnections}" />
+			</dataSource>
+		</environment>
+		<environment id="mysql">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver"
+					value="com.mysql.jdbc.Driver" />
+				<property name="url"
+					value="jdbc:mysql://${gaia.host}/${gaia.database}?useUnicode=true&amp;characterEncoding=utf-8" />
+				<property name="username" value="${gaia.username}" />
+				<property name="password" value="${gaia.password}" />
+				<property name="poolPingQuery" value="SELECT 1" />
+              	<property name="poolPingEnabled" value="${gaia.enablePing}" />								
+				<property name="poolMaximumActiveConnections" value="200" />
+				<property name="poolMaximumIdleConnections" value="10" />
+			</dataSource>
+		</environment>
+		<environment id="mssql-jndi">
+			<transactionManager type="JDBC" />
+			<dataSource type="JNDI">
+				<property name="initial_context" value="java:/comp/env"/>
+				<property name="data_source" value="jdbc/gaia"/>
+			</dataSource>
+		</environment>
+		<environment id="mysql-jndi">
+			<transactionManager type="JDBC" />
+			<dataSource type="JNDI">
+				<property name="initial_context" value="java:/comp/env"/>
+				<property name="data_source" value="jdbc/gaia"/>
+			</dataSource>
+		</environment>
+	</environments>
+
+	<mappers>
+		<mapper resource="com/unsee/tea/biz/mapping/TeaSaleMapper.xml" />
+		<mapper resource="com/unsee/tea/biz/mapping/TeaTraceMapper.xml" />
+		<mapper resource="com/unsee/tea/biz/mapping/CompanyMapper.xml" />
+	</mappers>
+</configuration>

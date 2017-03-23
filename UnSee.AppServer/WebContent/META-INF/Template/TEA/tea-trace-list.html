@@ -1,0 +1,233 @@
+<script src="${webroot}/assets/js/table.js"></script>
+<script src="${webroot}/js/utility.js"></script>
+<script src="${webroot}/js/jquery.cookie.js"></script>
+
+<script type="text/javascript" src="${webroot}/jqcode/jquery.qrcode.min.js"></script>
+
+<script type="text/javascript">
+	window.jQuery || document.write("<script src='../assets/js/jquery.min.js'>"+"<"+"/script>");
+</script>
+
+<style>
+.table-content {
+	margin-bottom:20px;
+}
+.table-footer {
+	position:fixed;
+	bottom:0;
+	background-color:white;
+	padding-top:5px;
+	border-top: #D6D9D1 1px solid;
+	max-height:50px;
+}
+.glyphicon-search {
+	top:0;
+	cursor:pointer;
+}
+.paging_bootstrap {
+	overflow-y:scroll;
+	max-height:50px;
+}
+.box {
+	margin-bottom: 25px;
+}
+.inner-box {
+	height:240px;
+	padding: 12px;
+    border: 1px solid #e7eaec;
+    overflow-y:scroll;
+}
+.inner-box .row{
+	padding:12px;
+}
+.inner-box row span{
+	float:right;
+}
+.tabYellow{
+	color: #FFCC33;
+}
+.tabBlue{
+	color: #87b87f;
+}
+</style>
+
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i class="ace-icon fa fa-angle-double-right"></i>
+		<#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div class="widget-header">
+		<div class="widget-toolbar">
+		</div>
+	</div>
+	<br>
+</div>
+
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<div class="panel-title row" style="margin:10px 0 0 0;">
+			<div class="col-sm-3"><span>查询条件</span></div>
+			<form>
+			<div class="col-sm-3">
+				<div class="input-group">
+					<label class="input-group-addon">输入批次</label>
+					<input name="batch" class="form-control" value="${batch!''}">
+				</div>
+			</div>
+			<div class="col-sm-3">
+				<div class="input-group">
+					<label class="input-group-addon">选择节点</label>
+					<select name="nodeList" class="form-control" onchange="">
+						<option name="node" value="0">-所有节点-</option>
+						<#if dictNode??>
+							<#list dictNode.toArray() as item>
+							<#if item??>
+							<option name="node" value="${item.key}">${item.name}</option>
+							</#if>
+							</#list>
+						</#if>
+					</select>
+				</div>
+			</div>
+			<div class="col-sm-1" >
+				<button class="btn btn-sm btn-success submit" type="submit">查询</button>
+			</div>
+			</form>
+			<div class="col-sm-2" >
+				<button class="btn btn-sm btn-success" onclick="return doQRCode('${batch!''}')">生成二维码</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel-body">
+		<table class="table" id="order-table">
+			<thead>
+				<tr class="columns">
+					<#if table??>
+					<#list table.columns as column>
+						<th <#if column.className??>class="${column.className} <#if !column.visible>hide</#if>"</#if> <#if column.pk?? && column.pk>data-id="${column.fieldName}"</#if> <#if column.fieldName??>column-name="${column.fieldName}"</#if>>${column.name}</th>
+					</#list>
+					</#if>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<#if table?? && table.rows?? && table.rows?size&gt;0>
+				<#list table.rows as row>
+				<tr>
+					<#list table.columns as column>
+						<td class="<#if column.className??>${column.className}</#if> <#if !column.visible>hide</#if>" <#if column.pk?? && column.pk>data-id="${row[column.fieldName]}"</#if> <#if column.fieldName??>column-name="${column.fieldName}"</#if>><#if row[column.fieldName]??>${row[column.fieldName]}</#if></td>
+					</#list>
+			
+					<td>
+						<div class="hidden-sm hidden-xs btn-group">
+							<button class="btn btn-xs btn-success btn-append">
+								<i class="ace-icon fa  glyphicon glyphicon-plus bigger-120"></i>
+							</button>
+			
+							<#if table.hasPK()>
+								
+								<button class="btn btn-xs btn-info btn-edit">
+									<i class="ace-icon fa fa-pencil bigger-120"></i>
+								</button>
+			
+								<button class="btn btn-xs btn-danger btn-remove">
+									<i class="ace-icon fa fa-trash-o bigger-120"></i>
+								</button>
+							</#if>
+						</div>
+					</td>
+				</tr>
+				</#list>
+				</#if>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+<!--生成二维码对话框 -->
+<div id="qrcodeDlg" title="生成批次二维码" class ="hide">
+	<div id="qrcode"></div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	if('' != '${node!''}'){
+		$('select option[value=\'${node!''}\']').prop('selected','selected');
+	}
+	
+	$(".btn-append").click(function(){
+		doAdd();	
+	});
+	
+	$(".btn-edit").click(function() {
+		doEdit($(this).parent().parent().parent().find(".id").text());
+	});
+	
+	$(".btn-remove").click(function(){
+		console.log($(this).parent().parent().parent());
+		doRemove($(this).parent().parent().parent().find(".id").text());
+	});
+});
+
+function doAdd() {
+	window.location = "${webroot}/TEA/tea-trace-input.jsp?featureCode=menu.tea.info.input";
+}
+
+function doEdit(id){
+	window.location = "${webroot}/TEA/tea-trace-input.jsp?featureCode=menu.tea.info.input&id=" + id;
+}
+
+function doRemove(id){
+	if(confirm("确定删除该记录吗？(此操作不可恢复!)")){
+		$.post("${webroot}/service/TeaTrace.action?verb=remove",{id: id}, function(r){
+			if(r.success){
+				window.location = window.location;
+			} else {
+				alert(r.message);
+			}
+		},'json');
+	}
+}
+
+function doQRCode(batch){
+	if(0 == batch || '' == batch){
+		alert('无批次信息');
+		return ;
+	}
+	//$("#qrcode").prop('src',"${webroot}/service/TeaTrace.action?verb=get&target=getQRCode&batch="+batch);
+	$('#qrcode').qrcode({render:"canvas",width: 300,height: 300,text: "http://${serverIp}:8080/UnSee.AppServer/TEA/tea-batch-trace.jsp?batch="+batch});
+	
+	$("#qrcodeDlg").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 480,
+		width: 480,
+		modal: true,
+		buttons: {
+			/* "保存二维码":function(){
+				console.log(document.getElementById("qrcode"));
+				var canvas = document.getElementById("qrcode").childNodes[0];
+				var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+				window.location.href = image;
+			}, */
+			"关闭": function() {
+				$("#qrcodeDlg").dialog( "close" );
+			}
+		}
+	}).on("dialogclose",function(){
+		$("#qrcodeDlg").find("canvas").remove();
+	});
+}
+
+function saveAs(){
+		var img = document.getElementById("qrImg");
+		var oPop = window.open(img.src,"","width=1,height=1,top=5000,left=5000");
+		for(;   oPop.document.readyState   !=   "complete";   ){     
+		if   (oPop.document.readyState   ==   "complete")break;  
+		}
+		oPop.document.execCommand("SaveAs");
+		oPop.close();
+}
+</script>

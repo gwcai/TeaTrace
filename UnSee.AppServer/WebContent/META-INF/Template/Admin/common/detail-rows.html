@@ -1,0 +1,87 @@
+<#if table.rows?? && table.rows?size&gt;0>
+<#list table.rows as row>
+<tr <#if table.hasPK()>data-id="${row[table.getPKField()]}"</#if>>
+	<td class="center">
+		<#if table.multiSelection>
+		<label class="position-relative">
+		<input type="checkbox" class="ace"><span class="lbl"></span></label>
+		<#else>
+		<span class="lbl">${row_index+1}</span>
+		</#if>
+		<span class="glyphicon glyphicon-chevron-right"></span>
+	</td>
+
+	<#list table.columns as column>								
+		<td <#if column.className??>class="${column.className} <#if !column.visible>hide</#if>"</#if> <#if column.pk?? && column.pk>data-id="${row[column.fieldName]}"</#if>><#if row[column.fieldName]??>${column.getDisplayValue(row[column.fieldName])}</#if></td>								
+	</#list>
+
+	<td>
+		<div class="hidden-sm hidden-xs btn-group">
+			<button class="btn btn-xs btn-success btn-append">
+				<i class="ace-icon fa  glyphicon glyphicon-plus bigger-120"></i>
+			</button>
+
+			<#if table.hasPK()>
+			<button class="btn btn-xs btn-info btn-edit">
+				<i class="ace-icon fa fa-pencil bigger-120"></i>
+			</button>
+
+			<button class="btn btn-xs btn-danger btn-remove">
+				<i class="ace-icon fa fa-trash-o bigger-120"></i>
+			</button>
+			</#if>
+		</div>
+
+		<div class="hidden-md hidden-lg">
+			<div class="inline position-relative">
+				<button class="btn btn-minier btn-primary dropdown-toggle"
+					data-toggle="dropdown" data-position="auto">
+					<i class="ace-icon fa fa-cog icon-only bigger-110"></i>
+				</button>
+
+				<ul
+					class="dropdown-menu dropdown-only-icon dropdown-yellow dropdown-menu-right dropdown-caret dropdown-close">
+					<li><a href="#" class="tooltip-info" data-rel="tooltip"
+						title="" data-original-title="View"> <span class="blue">
+								<i class="ace-icon fa fa-search-plus bigger-120 btn-append"></i>
+						</span>
+					</a></li>
+
+					<#if table.hasPK()>
+					<li><a href="#" class="tooltip-success"
+						data-rel="tooltip" title="" data-original-title="Edit">
+							<span class="green"> <i
+								class="ace-icon fa fa-pencil-square-o bigger-120"></i>
+						</span>
+					</a></li>
+
+					<li><a href="#" class="tooltip-error" data-rel="tooltip"
+						title="" data-original-title="Delete"> <span class="red">
+								<i class="ace-icon fa fa-trash-o bigger-120"></i>
+						</span>
+					</a></li>
+					</#if>
+				</ul>
+			</div>
+		</div>
+	</td>
+</tr>
+</#list>
+</#if>
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#mainTable tbody tr").bind("click",function(){
+		if($(this).hasClass("detail-show")) {
+			$(this).removeClass("detail-show").next().remove();
+			$(this).find(".glyphicon-chevron-down").removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-right");
+		} else {
+			$(this).addClass("detail-show")
+			.after("<tr><td colspan='${table.columns?size+2}'></td></tr>")
+			.find(".glyphicon-chevron-right").removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-down");
+			
+			if(typeof inflactDetail == 'function') 
+				inflactDetail($(this).next().children(),$(this).attr("data-id"));
+		}
+	}).css("cursor","pointer");
+});
+</script>

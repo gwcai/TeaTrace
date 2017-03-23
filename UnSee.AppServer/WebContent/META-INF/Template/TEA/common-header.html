@@ -1,0 +1,63 @@
+<script src="${webroot}/assets/js/table.js"></script>
+<script src="${webroot}/js/utility.js"></script>
+
+<script type="text/javascript">
+	window.jQuery || document.write("<script src='../assets/js/jquery.min.js'>"+"<"+"/script>");
+</script>
+
+<style>
+.table-content {
+	margin-bottom:20px;
+}
+.table-footer {
+	position:fixed;
+	bottom:0;
+	background-color:white;
+	padding-top:5px;
+	border-top: #D6D9D1 1px solid;
+	max-height:50px;
+}
+.glyphicon-search {
+	top:0;
+	cursor:pointer;
+}
+.paging_bootstrap {
+	overflow-y:scroll;
+	max-height:50px;
+}
+.box {
+	margin-bottom: 25px;
+}
+.inner-box {
+	height:240px;
+	padding: 12px;
+    border: 1px solid #e7eaec;
+    overflow-y:scroll;
+}
+.inner-box .row{
+	padding:12px;
+}
+.inner-box row span{
+	float:right;
+}
+.tabYellow{
+	color: #FFCC33;
+}
+.tabBlue{
+	color: #87b87f;
+}
+</style>
+
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i class="ace-icon fa fa-angle-double-right"></i>
+		<#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div class="widget-header">
+		<div class="widget-toolbar">
+			
+		</div>
+	</div>
+	<br>
+</div>

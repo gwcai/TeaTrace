@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TeaTraceEntityMapper">
+	<resultMap id="TeaTraceResultMapper" type="TeaTraceEntity">
+		<id property="id" column="id" jdbcType="INTEGER"/>
+		<result property="nodeId" column="node_id" />
+		<result property="time" column="time" />
+		<result property="weather" column="weather" />
+		<result property="temperature" column="temperature" />
+		<result property="dampness" column="dampness" />
+		<result property="location" column="location" />
+		<result property="longitude" column="longitude" />
+		<result property="latitude" column="latitude" />
+		<result property="pictureLink" column="picture_link" />
+		<result property="creator" column="creator" />
+		<result property="batch" column="batch"/>
+		<result property="dirty" column="newflag" />
+		<result property="newFlag" column="newflag" />
+	</resultMap>
+
+	<select id="SelectTeaTraceByPK" parameterType="Map"
+		resultMap="TeaTraceResultMapper">
+		SELECT 1 as newflag,trace.* FROM trace WHERE id=#{id}
+	</select>
+	
+	<select id="SelectTeaTraces" parameterType="Map"
+		resultMap="TeaTraceResultMapper">
+		SELECT 1 as newflag,trace.* FROM trace WHERE node_id=#{nodeId}
+	</select>
+	
+	<select id="ListTeaTraces" parameterType="String"
+		resultMap="TeaTraceResultMapper">
+		SELECT 1 as newflag,trace.* FROM trace WHERE batch=#{value}
+	</select>	
+
+	<insert id="InsertTeaTrace" parameterType="TeaTraceEntity">
+		<selectKey order="AFTER" keyProperty="id" resultType="String">
+			SELECT @@IDENTITY;
+		</selectKey>
+		INSERT INTO trace(node_id,time,weather,
+			temperature,dampness,location,longitude,latitude,
+			picture_link,creator,batch)
+		VALUES (#{nodeId},#{time},#{weather},
+			#{temperature},#{dampness},#{location},#{longitude},#{latitude},
+			#{pictureLink},#{creator},#{batch})
+	</insert>
+
+	<update id="UpdateTeaTrace" parameterType="TeaTraceEntity">
+		UPDATE trace
+		SET node_id=#{nodeId},time = #{time},weather = #{weather},temperature = #{temperature},dampness = #{dampness},location = #{location},longitude=#{longitude},latitude=#{latitude},picture_link=#{pictureLink},creator = #{creator},batch=#{batch}
+		WHERE id=#{id}
+	</update>
+
+	<delete id="DeleteTeaTrace" parameterType="Map">
+		DELETE FROM trace WHERE id=#{id}
+	</delete>
+</mapper>

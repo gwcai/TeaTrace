@@ -1,0 +1,160 @@
+<div id="${dialog.id}" title="${dialog.title}" class='<#if dialog.className??>${dialog.className}</#if> hide'>
+<form id="editorForm">
+<input id="id" name="id" type="hidden"></input>
+<input id="dirty" name="dirty" type="hidden"></input>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">名称</label>
+	<div class="col-sm-9">
+		<input type="text" id="code-name" name="codeName" placeholder="字典名称" class="form-control">
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">表达式</label>
+	<div class="col-sm-9">
+		<textarea rows="4" id="expression" name="expression" class="form-control"></textarea>
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">值字段</label>
+	<div class="col-sm-9">
+		<input type="text" id="value-field" name="valueField" class="form-control"></input>
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">显示字段</label>
+	<div class="col-sm-9">
+		<input type="text" id="display-field" name="displayField" class="form-control"></input>
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">拼音字段</label>
+	<div class="col-sm-9">
+		<input type="text" id="spell-field" name="spellField" class="form-control"></input>
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">排序字段</label>
+	<div class="col-sm-9">
+		<input type="text" id="sort-field" name="sortField" class="form-control"></input>
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">缓存时间（秒）</label>
+	<div class="col-sm-9">
+		<input type="text" id="cachingTime" name="cachingTime" class="form-control"></input>
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-12 control-label no-padding-right" for="cachable"><input type="checkbox" id="cachable" name="cachable"/>&nbsp;需缓存</label>
+</div>
+<div class="form-group">
+	<label class="col-sm-12 control-label no-padding-right" for="enabled"><input type="checkbox" id="enabled" name="enabled"/>&nbsp;有效</label>
+</div>
+</form>
+</div>
+<div id="previewDlg" class="hide">
+</div>
+
+<script type="text/javascript">
+function doNew() {
+	// reset dialog's children
+	$("#editorForm")[0].reset();
+	
+	$("#${dialog.id}").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 500,
+		width: 480,
+		modal: true,
+		buttons: {
+			"提交": doSubmit,
+			"取消": function() {
+				$("#${dialog.id}").dialog( "close" );
+			}
+		}
+	});
+}
+
+function doEdit(id) {
+	if(id == null) return;
+	$.post("${dialog.getActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			var ent = jQuery.parseJSON(r.params.entity);
+			$("#id").val(ent.id);			
+			$("#code-name").val(ent.codeName);
+			$("#expression").val(ent.expression);
+			$("#value-field").val(ent.valueField);
+			$("#display-field").val(ent.displayField);
+			$("#spell-field").val(ent.spellField);
+			$("#sort-field").val(ent.sortField);
+			$("#enabled").prop("checked", ent.enabled);
+			$("#cachable").prop("checked", ent.cachable);
+			$("#cachingTime").val(ent.cachingTime);
+			$("#${dialog.id}").removeClass('hide').dialog({
+				autoOpen: true,
+				height: 500,
+				width: 480,
+				modal: true,
+				buttons: {
+					"提交": doSubmit,
+					"取消": function() {
+						$("#${dialog.id}").dialog( "close" );
+					}
+				}
+			});
+		}
+	},'json');
+}
+
+function doSubmit() {
+	if($("#id").val() == "")
+		$("#dirty").val(0); // GAIAEntity.NEW_DIRTY
+	else
+		$("#dirty").val(2); // GAIAEntity.MODIFY_DIRTY
+	
+	var ent = $("#editorForm").serializeJson();
+	ent.enabled = $("#enabled").prop("checked");
+	ent.cachable = $("#cachable").prop("checked");
+	
+	$.post("${dialog.updateActionUrl!''}",{entity: JSON.stringify(ent)},function(r){
+		if(r.success) {
+			$("#${dialog.id}").dialog( "close" );
+			window.location = window.location;
+		} 			
+		else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function doRemove(id, row) {
+	if(!confirm("确定要删除该记录吗？")) return;
+	$.post("${dialog.removeActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			$(row).remove()
+		} else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function doPreview(codeName) {
+	$("#previewDlg").removeClass("hide").dialog({
+		autoOpen:true,
+		width:500,
+		height:800,
+		buttons:{
+			"关闭":function(){$("#previewDlg").dialog("close");}
+		}
+	});
+	$("#previewDlg").find("table").remove();
+	
+	$.post("${webroot}/service/Dictionary.action?verb=list",{dictName:codeName},function(r){
+		if(r.success) {
+			var table= $.parseJSON(r.params.dictionary).toHTMLTable("table table-bordered");
+			$("#previewDlg").append(table);
+		} else {
+			alert(r.message);
+		}
+	},"json");
+}
+</script>

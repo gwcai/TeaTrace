@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<brokers>
+	<broker id="TeaSaleBroker" class="com.unsee.gaia.dal.brokers.DefaultBroker">
+		<defaultStatement selectId="SelectTeaSales"
+			selectEntityId="SelectTeaSaleByPK" insertId="InsertTeaSale"
+			updateId="UpdateTeaSale" deleteId="DeleteTeaSale" />
+	</broker>
+	
+	<broker id="TeaTraceBroker" class="com.unsee.gaia.dal.brokers.DefaultBroker">
+		<defaultStatement selectId="SelectTeaTraces"
+			selectEntityId="SelectTeaTraceByPK" insertId="InsertTeaTrace"
+			updateId="UpdateTeaTrace" deleteId="DeleteTeaTrace" />
+	</broker>
+	
+	<broker id="CompanyBroker" class="com.unsee.gaia.dal.brokers.DefaultBroker">
+		<defaultStatement selectId="SelectCompanys"
+			selectEntityId="SelectCompanyByPK" insertId="InsertCompany"
+			updateId="UpdateCompany" deleteId="DeleteCompany" />
+	</broker>
+</brokers>

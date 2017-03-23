@@ -1,0 +1,97 @@
+<link rel="stylesheet" href="${webroot}/css/pivot/pivot.css" />
+<script src="${webroot}/js/pivot/pivot.js"></script>
+<script src="${webroot}/js/pivot/pivot.zh.js"></script>
+
+<div id="queryDlg" title="查询" class='hide'>
+<form id="queryForm" method="GET">
+<div class="form-group">
+	<#if soe?? && soe.queries?size&gt;0>
+	<#list soe.queries as query>
+		<label class="col-sm-3 control-label no-padding-right" for="name">${query.caption!''}</label>
+		<div class="col-sm-9">
+			<input type="text" name="${query.varName}" class="form-control">
+		</div>
+	</#list>
+	</#if>
+</div>
+</form>
+</div>
+
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i class="ace-icon fa fa-angle-double-right"></i>
+		<#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div class="widget-header">
+		<div class="widget-toolbar">
+			<#list table.toolBar.getItems() as item>
+			<a href="#" <#if item.id??>id="${item.id}"</#if>data-action="${item.action!'unknown'}" class="tool-item orange2" <#if item.title??>title="${item.title}"</#if>>
+				<i class="ace-icon fa ${item.icon!'fa-building-o'}"></i>
+			</a>
+			</#list>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="row">
+			<div id="pivotTable">
+			</div>
+		</div>		
+	</div>
+</div>
+<script src="${webroot}/assets/js/table.js"></script>
+<script src="${webroot}/js/utility.js"></script>
+<script type="text/javascript">
+function tableFilter(arg) {
+	$("#mainTable tbody tr").hide();
+	$("#mainTable tbody tr td").filter(":contains('"+arg+"')").parent().show();
+}
+
+function doSearch() {
+	$("#queryDlg input").each(function(){
+		$(this).val(getParameterByName($(this).attr("name")));
+	});
+	
+	$("#queryDlg").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 240,
+		width: 300,
+		modal: true,
+		buttons: {
+			"查询": function(){$("#queryForm").submit()},
+			"取消": function() {
+				$("#queryDlg").dialog( "close" );
+			}
+		}
+	});
+}
+
+$(document).ready(function(){
+	var renderers = $.extend($.pivotUtilities.locales.zh.renderers, 
+            $.pivotUtilities.export_renderers);
+
+	var table=[<#list table.rows as row>
+	<#assign output=false/>
+	{
+		<#list soe.properties as prop>
+		<#if prop.visible>
+			<#if prop.lookup>
+			"${prop.caption}":"${row[prop.getLookupFieldName()?lower_case]!''}"
+			<#else>
+			"${prop.caption}":"${row[prop.propName?lower_case]!''}"
+			</#if>
+			<#assign output=true/>
+		</#if>
+		<#if output && prop_has_next>,</#if>
+		</#list>
+	}<#if row_has_next>,</#if></#list>];
+	$("#pivotTable").pivotUI(
+		table,
+		{renderers: renderers},
+		false,
+		'zh'
+	);
+});
+</script>

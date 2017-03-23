@@ -1,0 +1,573 @@
+<style>
+.clone {
+	display:none;
+}
+.tab-pane{
+	overflow:scroll;
+}
+</style>
+<script src="${webroot}/js/encoder.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#objectProps").find(".btn-append").on("click",function(){
+		appendProp(this);
+	});
+	$("#objectProps").find(".btn-remove").on("click",function(){removeProp(this)});
+	
+	$("#objectQueries").find(".btn-append").on("click",function(){
+		appendQuery(this);
+	});
+	$("#objectQueries").find(".btn-remove").on("click",function(){removeProp(this)});
+});
+
+function removeProp(el) {
+	var dirty = $(el).parent().parent().parent().find("input[name='dirty']");
+	if(dirty.val() == "0") {
+		$(el).parent().parent().parent().remove();
+	} else {
+		$(el).parent().parent().parent().hide();
+		dirty.val(9);
+	}
+	
+	caclSort();
+}
+
+function appendProp(el) {
+	var clone = $("#objectProps tr.clone").clone();
+	if(el) {		
+		$(el).parent().parent().parent().before(clone);
+	} else {
+		$("#objectProps tbody").append(clone);
+	}
+	
+	clone.removeClass("clone").find("td:first").text("--");
+	clone.find("input[name='dirty']").val("0");
+	clone.find(".btn-append").on("click",function(){
+		appendProp(this);
+	})
+	clone.find(".btn-remove").on("click",function(){
+		removeProp(this)
+	});
+	
+	caclSort();
+	
+	return clone;
+}
+
+function appendQuery(el) {
+	var clone = $("#objectQueries tr.clone").clone();
+	if(el) {		
+		$(el).parent().parent().parent().before(clone);
+	} else {
+		$("#objectQueries tbody").append(clone);
+	}
+	
+	clone.removeClass("clone").find("td:first").text("--");
+	clone.find("input[name='dirty']").val("0");
+	clone.find(".btn-append").on("click",function(){
+		appendQuery(this);
+	})
+	clone.find(".btn-remove").on("click",function(){
+		removeProp(this)
+	});
+	
+	return clone;
+}
+
+function caclSort() {
+	$("#objectProps tbody tr").each(function(i,v){
+		$(this).find("input[name='sort']").val(i*10);
+	});
+}
+
+function doSubmit() {
+	var sysObject = {};
+	sysObject.id= $("#objectId").val();
+	sysObject.objectCode = $("#objectCode").val();
+	sysObject.objectName = $("#objectName").val();
+	sysObject.dbName = $("#dbName").val();
+	sysObject.systemObject = $("#systemObject").val();
+	sysObject.objectDesc = $("#objectDesc").val();
+	sysObject.objectDefine = $("#objectDefine").val();
+	sysObject.objectType = $("#objectType option:selected").val();
+	sysObject.dirty = $("#objectId").val() == "0"?0:2;// refer to GAIAEntity.DIRTY
+	sysObject.properties = [];
+	sysObject.queries = [];
+	
+	$("#objectProps tbody tr").not(".clone").each(function(){
+		var row = {};
+		$(this).find("input").each(function(){
+			if($(this).is(":checkbox")) {
+				row[$(this).attr("name")] = $(this).prop("checked");
+			} else {
+				row[$(this).attr("name")] = $(this).val(); 
+			}
+		});
+		$(this).find("select").each(function(){
+			row[$(this).attr("name")] = $(this).val(); 
+		});
+		
+		sysObject.properties.push(row);
+	});
+	
+	$("#objectQueries tbody tr").not(".clone").each(function(){
+		var row = {};
+		$(this).find("input").each(function(){
+			if($(this).is(":checkbox")) {
+				row[$(this).attr("name")] = $(this).prop("checked");
+			} else {
+				row[$(this).attr("name")] = $(this).val(); 
+			}
+		});
+		$(this).find("select").each(function(){
+			row[$(this).attr("name")] = $(this).val(); 
+		});
+		
+		sysObject.queries.push(row);
+	});
+
+	$.post("${webroot}/CommonEntity.action?verb=put&en=SysObjectsEntity", {entity: JSON.stringify(sysObject)},function(r){		
+		if(r.success) {
+			var ent = JSON.parse(r.params.entity);
+			window.location="sys-objects-editor.jsp?featureCode=menu.system.sysobjects.editor&id="+ent.id;
+		} else {
+			alert(r.message);
+		}
+	},'json');
+}
+<#if objectId??&&objectId?length&gt;0>
+function doCopy() {
+	if(!confirm("复制该对象？")) return;
+	
+	$.post("${webroot}/SysObjects.action?verb=copy&id=${objectId!''}", null,function(r){		
+		if(r.success) {
+			window.location="sys-objects-editor.jsp?featureCode=menu.system.sysobjects.editor&id="+r.params.id;
+		} else {
+			alert(r.message);
+		}
+	},'json');
+}
+</#if>
+
+function doImport() {
+	$("#importDBName").val($("#dbName").val());
+	var tableName = $("#systemObject").val();
+	$("#tableName").val(tableName.substring(tableName.lastIndexOf(".")!=-1?tableName.lastIndexOf(".")+1:0));	
+	$("#importColumnsDlg").modal();
+}
+
+function confirmImport() {
+	if($("#importDBName").val().length<=0) {
+		alert("库名呀！");
+		$("#dbName").focus();
+		return;
+	}
+	
+	if($("#tableName").val().length<=0) {
+		alert("表名呀！");
+		$("#tableName").focus();
+		return;
+	}
+	
+	$.post("${webroot}/service/SysObjects.action?verb=listObjectColumns",
+			{dbName:$("#importDBName").val(),objectName:$("#tableName").val()},
+			function(r){
+				if(r.success) {
+					var columns = JSON.parse(r.params.list);
+					$(columns).each(function(i,v){
+						var row = appendProp();
+						row.find("input[name='caption']").val(this.columnName);
+						row.find("input[name='propName']").val(this.columnName);
+						row.find("input[name='fieldName']").val(this.columnName);
+						row.find("select[name='dataType']").val(this.dataType);
+					});
+					$("#importColumnsDlg").modal("hide");		
+				} else {
+					alert(r.message);
+			}
+		},'json');
+	
+}
+</script>
+<div class="page-header">
+	<h1>
+		${title!''}
+	</h1>
+	<div class="wizard-actions">
+		<button class="btn btn-info btn-next" data-last="Finish" onclick="window.location='sys-objects-mngr.jsp?featureCode=menu.system.sysobjects.manager'">
+			<i class="ace-icon fa fa-arrow-left"></i> 返回
+		</button>
+
+		<#if objectId??&&objectId?length&gt;0>
+		<button class="btn btn-info" data-last="Finish" onclick="return doCopy();">
+			<i class="ace-icon fa fa-arrow-left"></i> 复制
+		</button>
+		</#if>
+
+		<button class="btn btn-success btn-next" data-last="Finish" onclick="return doSubmit();">
+			提交 <i class="ace-icon fa fa-arrow-right icon-on-right"></i>
+		</button>
+	</div>
+</div>
+<div class="col-xs-12" style="margin-bottom: 64px;">
+	<input type="hidden" id="objectId" value="<#if soe??>${soe.id!'0'}</#if>"></input>
+	<div class="row">
+		<div class="form-group col-sm-4">
+			<label class="col-sm-3 control-label no-padding-right"
+				for="form-field-1">对象代码</label>
+
+			<div class="col-sm-9">
+				<input type="text" id="objectCode" placeholder="系统对象代码"
+					class="form-control" required value="${soe.objectCode!''}">
+			</div>
+		</div>
+		<div class="form-group col-sm-4">
+			<label class="col-sm-3 control-label no-padding-right"
+				for="form-field-1">对象名称</label>
+
+			<div class="col-sm-9">
+				<input type="text" id="objectName" placeholder="系统对象名称"
+					class="form-control" required value="${soe.objectName!''}">
+			</div>
+		</div>
+		<div class="form-group col-sm-4">
+			<label class="col-sm-3 control-label no-padding-right"
+				for="form-field-1">对象类别</label>
+
+			<div class="col-sm-9">
+				<select id="objectType" class="form-control">
+				<#if dictObjecType??>
+				<#list dictObjecType.toArray() as item>
+					<option value="${item.key}"<#if soe.objectType??&&soe.objectType==item.key>selected="selected"</#if>>${item.name}</option>
+				</#list>
+				</#if>
+				</select>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="form-group col-sm-4">
+			<label class="col-sm-3 control-label no-padding-right"
+				for="form-field-1">数据库名</label>
+
+			<div class="col-sm-9">
+				<input type="text" id="dbName" placeholder="数据库实例名称"
+					class="form-control" value="${soe.dbName!''}">
+			</div>
+		</div>
+
+		<div class="form-group col-sm-4">
+			<label class="col-sm-3 control-label no-padding-right"
+				for="form-field-1">系统对象</label>
+
+			<div class="col-sm-9">
+				<input type="text" id="systemObject" placeholder="系统对象名称"
+					class="form-control" required value="${soe.systemObject!''}">
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="form-group col-sm-4">
+			<label class="col-sm-3 control-label no-padding-right"
+				for="form-field-1">描述（备注）</label>
+
+			<div class="col-sm-9">
+				<textarea id="objectDesc" rows="6" class="form-control"><#if soe.objectDesc??>${soe.objectDesc}</#if></textarea>
+			</div>
+		</div>
+		<div class="form-group col-sm-4">
+			<label class="col-sm-3 control-label no-padding-right"
+				for="form-field-1">对象定义</label>
+
+			<div class="col-sm-9">
+				<textarea id="objectDefine" rows="6" class="form-control"><#if soe.objectDefine??>${soe.objectDefine}</#if></textarea>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-12 widget-container-col ui-sortable"
+		style="min-height: 108px;">
+		<ul class="nav nav-tabs">
+		  	<li role="presentation" class="active"><a href="#objectProps" data-toggle="tab">属性配置</a></li>
+  			<li role="presentation"><a href="#objectQueries" data-toggle="tab">查询配置</a></li>
+		</ul>
+		<div class="tab-content" style="width:100%;height:90%;">
+			<div id="objectProps" class="tab-pane active">
+				<div class="tool-strip" style="text-align: right; margin:12px 4px;">
+					<button class="btn btn-default btn-xs" onclick="return appendProp();">
+						<i class="glyphicon glyphicon-plus"></i>添加
+					</button>
+					<button id="btnAdd" class="btn btn-warning btn-xs" onclick="return doImport();">
+						<i class="glyphicon glyphicon-import">导入</i>
+					</button>
+				</div>
+				<table id="objectProps" class="table table-striped table-condensed">
+					<thead>
+						<tr>
+							<th>编号</th>
+							<th>排序</th>
+							<th>标题</th>
+							<th>属性名</th>
+							<th>字段名</th>
+							<th>数据类型</th>
+							<th>主键</th>
+							<th>只读</th>
+							<th>可见</th>
+							<th>需字典</th>
+							<th>字典</th>
+							<th>计算字段</th>
+							<th>表达式</th>
+							<th>排序</th>
+							<th>排序方向</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="clone">
+							<td></td>
+							<td><input type="hidden" name="id" value="0"><input type="hidden" name="dirty" value="0"><input type="text" name="sort"></td>
+							<td><input type="text" name="caption"></td>
+							<td><input type="text" name="propName"></td>
+							<td><input type="text" name="fieldName"></td>
+							<td>
+								<select name="dataType">
+								<#list datatypes as datatype>
+								<option value="${datatype.key}">${datatype.name}</option>
+								</#list>
+								</select>
+							</td>
+							<td><input type="checkbox" name="pk"></td>
+							<td><input type="checkbox" name="readOnly"></td>
+							<td><input type="checkbox" name="visible"></td>
+							<td><input type="checkbox" name="lookup"></td>
+							<td>
+								<select name="dictionaryName">
+								<option value="">--</option>
+								<#list dictionaries.toArray() as dictionary>
+								<option value="${dictionary.key}">${dictionary.name}</option>
+								</#list>
+								</select>
+							</td>
+							<td><input type="checkbox" name="computeField"></td>
+							<td><input type="text" name="expression"></td>
+							<td><input type="checkbox" name="sortable"></td>
+							<td>
+								<select name="sortDirection">
+									<option value="">--</option>
+									<option value="ASC">正序</option>
+									<option value="DESC">逆序</option>
+								</select>
+							</td>
+							<td>
+							<div class='hidden-sm hidden-xs btn-group'>
+								<button class='btn btn-xs btn-success btn-append' title="在该条记录之上添加">
+									<i class='ace-icon fa  glyphicon glyphicon-plus bigger-120'></i>添加
+								</button>
+								<button class='btn btn-xs btn-danger btn-remove'>
+									<i class='ace-icon fa fa-trash-o bigger-120'></i>删除
+								</button>
+							</div>
+							</td>
+						</tr>
+						<#if soe.properties??>
+						<#list soe.properties as prop>
+						<tr>
+							<td>${prop.id}</td>
+							<td><input type="hidden" name="id" value="${prop.id}"><input type="hidden" name="dirty" value="2"><input type="text" value="${prop.sort?c}" name="sort"></td>
+							<td><input type="text" value="${prop.caption!''}" name="caption"></td>
+							<td><input type="text" value="${prop.propName!''}" name="propName"></td>
+							<td><input type="text" value="${prop.fieldName!''}" name="fieldName"></td>
+							<td>
+								<select name="dataType">
+								<#list datatypes as datatype>
+								<option value="${datatype.key}"<#if prop.dataType??&&datatype.key==prop.dataType>selected="selected"</#if>>${datatype.name}</option>
+								</#list>
+								</select>
+							</td>
+							<td><input type="checkbox" name="pk"<#if prop.pk>checked="checked"</#if>></td>
+							<td><input type="checkbox" name="readOnly"<#if prop.readOnly>checked="checked"</#if>></td>
+							<td><input type="checkbox" name="visible"<#if prop.visible>checked="checked"</#if>></td>
+							<td><input type="checkbox" name="lookup"<#if prop.lookup>checked="checked"</#if>></td>
+							<td>
+								<select name="dictionaryName">
+								<option value="" <#if dictionaries.lookup(prop.dictionaryName)??>selected="selected"</#if>>--</option>
+								<#list dictionaries.toArray() as dictionary>
+								<option value="${dictionary.key}"<#if dictionary.key==prop.dictionaryName!''>selected="selected"</#if>>${dictionary.name}</option>
+								</#list>
+								</select>
+							</td>
+							<td><input type="checkbox" name="computeField"<#if prop.computeField>checked="checked"</#if>></td>
+							<td><input type="text" name="expression" value="${prop.expression!''}"></td>
+							<td><input type="checkbox" name="sortable"<#if prop.sortable>checked="checked"</#if>></td>
+							<td>
+								<select name="sortDirection">
+									<option value="" <#if prop.sortDirection??&&prop.sortDirection?length&lt;0>selected="selected"</#if>>--</option>
+									<option value="ASC"<#if prop.sortable && "ASC"==prop.sortDirection!''>selected="selected"</#if>>正序</option>
+									<option value="DESC"<#if prop.sortable && "DESC"==prop.sortDirection!''>selected="selected"</#if>>逆序</option>
+								</select>
+							</td>
+							<td>
+							<div class='hidden-sm hidden-xs btn-group'>
+								<button class='btn btn-xs btn-success btn-append' title="在该条记录之上添加">
+									<i class='ace-icon fa  glyphicon glyphicon-plus bigger-120'></i>添加
+								</button>
+								<button class='btn btn-xs btn-danger btn-remove'>
+									<i class='ace-icon fa fa-trash-o bigger-120'></i>删除
+								</button>
+							</div>
+							</td>
+						</tr>
+						</#list>
+						</#if>		
+					</tbody>
+				</table>
+			</div>
+			<div id="objectQueries" class="tab-pane">
+				<div class="tool-strip" style="text-align: right; margin:12px 4px;">
+						<button class="btn btn-default btn-xs" onclick="return appendQuery();">
+							<i class="glyphicon glyphicon-plus"></i>添加
+						</button>						
+					</div>
+					<table id="objectQueries" class="table table-striped table-condensed">
+						<thead>
+							<tr>
+								<th>编号</th>
+								<th>模板</th>
+								<th>标题</th>
+								<th>变量名</th>
+								<th>字段名</th>
+								<th>变量类型</th>
+								<th>运算符</th>
+								<th>控件</th>
+								<th>控件参数</th>
+								<th>提示</th>
+								<th>分组</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr class="clone">
+								<td>--</td>
+								<td>
+									<input type="hidden" name="dirty" value="0">
+									<input type="text" value="Simple" name="category">
+								</td>
+								<td><input type="text" name="caption"></td>
+								<td><input type="text" name="varName"></td>
+								<td><input type="text" name="fieldName"></td>
+								<td>
+									<select name="varType">
+									<#list datatypes as datatype>
+									<option value="${datatype.key}">${datatype.name}</option>
+									</#list>
+									</select>
+								</td>
+								<td>
+									<select name="varOperator">
+									<#list operators as operator>
+									<option value="${operator.key}">${operator.name}</option>
+									</#list>
+									</select>								
+								</td>
+								<td>
+									<select name="ctrlType">
+									<#list controls as ctrl>
+									<option value="${ctrl.key}">${ctrl.name}</option>
+									</#list>
+									</select>								
+								</td>
+								<td><input type="text" name="ctrlArgument"></td>
+								<td><input type="text" name="hint"></td>
+								<td><input type="text" name="groupName"></td>
+								<td>								
+								<div class='hidden-sm hidden-xs btn-group'>
+									<button class='btn btn-xs btn-success btn-append' title="在该条记录之上添加">
+										<i class='ace-icon fa  glyphicon glyphicon-plus bigger-120'></i>添加
+									</button>
+									<button class='btn btn-xs btn-danger btn-remove'>
+										<i class='ace-icon fa fa-trash-o bigger-120'></i>删除
+									</button>
+								</div>
+								</td>
+							</tr>
+							<#if soe.queries??>
+							<#list soe.queries as query>
+							<tr>
+								<td>${query.id}</td>
+								<td>
+									<input type="hidden" name="id" value="${query.id}">
+									<input type="hidden" name="dirty" value="2">
+									<input type="text" value="${query.category!'Simple'}" name="category">
+								</td>
+								<td><input type="text" value="${query.caption!''}" name="caption"></td>
+								<td><input type="text" value="${query.varName!''}" name="varName"></td>
+								<td><input type="text" value="${query.fieldName!''}" name="fieldName"></td>
+								<td>
+									<select name="varType">
+									<#list datatypes as datatype>
+									<option value="${datatype.key}"<#if datatype.key==query.varType>selected="selected"</#if>>${datatype.name}</option>
+									</#list>
+									</select>
+								</td>
+								<td>
+									<select name="varOperator">
+									<#list operators as operator>
+									<option value="${operator.key}"<#if operator.key==query.varOperator>selected="selected"</#if>>${operator.name}</option>
+									</#list>
+									</select>								
+								</td>
+								<td>
+									<select name="ctrlType">
+									<#list controls as ctrl>
+									<option value="${ctrl.key}"<#if ctrl.key==query.ctrlType>selected="selected"</#if>>${ctrl.name}</option>
+									</#list>
+									</select>								
+								</td>
+								<td><input type="text" value="${query.ctrlArgument!''}" name="ctrlArgument"></td>
+								<td><input type="text" value="${query.hint!''}" name="hint"></td>
+								<td><input type="text" value="${query.groupName!''}" name="groupName"></td>	
+								<td>							
+								<div class='hidden-sm hidden-xs btn-group'>
+									<button class='btn btn-xs btn-success btn-append' title="在该条记录之上添加">
+										<i class='ace-icon fa  glyphicon glyphicon-plus bigger-120'></i>添加
+									</button>
+									<button class='btn btn-xs btn-danger btn-remove'>
+										<i class='ace-icon fa fa-trash-o bigger-120'></i>删除
+									</button>
+								</div>
+								</td>
+							</tr>
+							</#list>
+							</#if>		
+						</tbody>
+					</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="importColumnsDlg" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">导入结构</h4>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+        	<span class="input-group-addon">库名</span>
+        	<input id="importDBName" type="text" class="form-control"></input>
+        </div>
+        <div class="input-group">
+        	<span class="input-group-addon">表名</span>
+        	<input id="tableName" type="text" class="form-control"></input>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" onclick="return confirmImport();">导入</button>
+      </div>
+    </div>
+  </div>
+</div>

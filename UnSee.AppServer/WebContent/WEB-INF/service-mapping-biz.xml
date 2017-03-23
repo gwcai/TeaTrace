@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<!-- 茶叶溯源 -->
+	<service name="TeaTrace.action" class="com.unsee.tea.web.servlet.TeaTraceServlet" />
+</config>

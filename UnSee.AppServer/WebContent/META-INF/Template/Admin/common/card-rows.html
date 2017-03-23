@@ -1,0 +1,18 @@
+<#if table.rows?? && table.rows?size&gt;0>
+<#list table.rows as row>
+<div <#if table.hasPK()>data-id="${row[table.getPKField()]}"</#if> class="col-large-1 col-md-2 col-xs-12">
+	<div class="box">
+	<div class="inner-box">
+	<#list table.columns as column>								
+		<div <#if column.className??>class="${column.className} <#if !column.visible>hide</#if> row"</#if> <#if column.pk?? && column.pk>data-id="${row[column.fieldName]}"</#if>>
+			<#if row[column.fieldName]??>
+			<em>${column.name!''}</em>
+			<span>${column.getDisplayValue(row[column.fieldName])}</span>
+			</#if>
+		</div>								
+	</#list>
+	</div>
+	</div>
+</div>
+</#list>
+</#if>

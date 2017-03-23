@@ -1,0 +1,404 @@
+<script src="${webroot}/vue/vue.js"></script>
+
+<script src="${webroot}/assets/js/table.js"></script>
+<script src="${webroot}/js/utility.js"></script>
+
+<script type="text/javascript">
+	window.jQuery || document.write("<script src='../assets/js/jquery.min.js'>"+"<"+"/script>");
+</script>
+
+<style>
+.table-content {
+	margin-bottom: 20px;
+}
+
+.table-footer {
+	position: fixed;
+	bottom: 0;
+	background-color: white;
+	padding-top: 5px;
+	border-top: #D6D9D1 1px solid;
+	max-height: 50px;
+}
+
+.glyphicon-search {
+	top: 0;
+	cursor: pointer;
+}
+
+.paging_bootstrap {
+	overflow-y: scroll;
+	max-height: 50px;
+}
+
+.box {
+	margin-bottom: 25px;
+}
+
+.inner-box {
+	height: 240px;
+	padding: 12px;
+	border: 1px solid #e7eaec;
+	overflow-y: scroll;
+}
+
+.inner-box .row {
+	padding: 12px;
+}
+
+.inner-box row span {
+	float: right;
+}
+
+.tabYellow {
+	color: #FFCC33;
+}
+
+.tabBlue {
+	color: #87b87f;
+}
+</style>
+
+<div class="page-header">
+	<h1>
+		<#if table??>${table.title!''}</#if> <small> <i
+			class="ace-icon fa fa-angle-double-right"></i> <#if table??>${table.subTitle!''}</#if>	
+		</small>
+	</h1>
+	<div class="widget-header">
+		<div class="widget-toolbar"></div>
+	</div>
+	<br>
+</div>
+
+<!-- 信息导入对话框 -->
+<div id="importDataDlg" title="${importDlgTitle}" class="hide">
+	<form id="importDataForm" enctype="multipart/form-data"
+		target="iframeImport" method="post"
+		action="${webroot}/service/UploadFile.action">
+		<label class="col-sm-12 control-label no-padding-right" for="file">选择图片</label>
+		<input type="file" name="file" class="form-control"
+			onchange="uploadingReady=true;"></input>
+	</form>
+</div>
+
+<!-- 删除图片对话框 -->
+<div id="deleteDataDlg" title="图片详情" class="hide">
+	<form id="deleteDataForm" target="iframeDelete" method="post"
+		action="${webroot}/service/UploadFile.action?target=remove&id=">
+		<input type="hidden" id="pic" />
+		<img id="deletePicture" alt="" src="">
+	</form>
+</div>
+
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<div class="panel-title row" style="margin:10px 0 0 0;">
+			<div class="col-sm-2"><span>录入节点信息</span></div>
+			<div class="col-sm-3">
+				<div class="input-group">
+					<label class="input-group-addon">选择节点</label> 
+					<select id="selectNode" class="form-control" value="${queryArgs.nodeId!''}" onchange="return selectChange($(this));">
+						<#if dictNode??> 
+						<#list dictNode.toArray() as item>
+							<#if item??>
+								<option value="${item.key}">${item.name}</option>
+								</#if>
+							</#list> </#if>
+					</select>
+				</div>
+			</div>
+			<div class="col-sm-1"></div>
+			<div class="col-sm-2">
+				<form method="get" id="submitForm">
+					<input type="hidden" id="entId" name="id"></input>
+					<input type="hidden" id="nodeId" name="nodeId"></input>
+					<button class="btn btn-sm btn-success" onclick="return doSave();">提交</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel-body">
+		<#include "trace-node-editor.html"/>
+		<#include "sale-info-editor.html"/>
+		
+		<div class="row" id="divpicture"></div>
+	</div>
+</div>
+
+<style>
+#addPicture {
+	border: 1px dashed #000;
+	height: 150px;
+}
+
+#divpicture {
+	margin: 10px 0 10px 0;
+	padding-top: 10px;
+}
+</style>
+
+<script>
+var saleEnt = {
+		id:'${saleEnt.id!''}',
+		nodeId:'${saleEnt.nodeId!''}',
+		startTime:'${saleEnt.startTime!''}',
+		endTime:'${saleEnt.endTime!''}',
+		percentage:'${saleEnt.percentage!''}',
+		pictureLink:'${saleEnt.pictureLink!''}',
+		totalOutput:'${saleEnt.totalOutput!''}',
+		creator:'${saleEnt.creator!''}',
+		batch:'${saleEnt.batch!''}',
+		dirty: '${saleEnt.dirty!''}'
+	}
+	var vmSale = new Vue({
+		el:'#sale',
+		data:saleEnt
+	});
+	
+var traceEnt = {
+		id:'${traceEnt.id!''}',
+		nodeId:'${traceEnt.nodeId!''}',
+		weather:'${traceEnt.weather!''}',
+		temperature:'${traceEnt.temperature!''}',
+		dampness:'${traceEnt.dampness!''}',
+		pictureLink:'${traceEnt.pictureLink!''}',
+		location:'${traceEnt.location!''}',
+		longitude:'${traceEnt.longitude!''}',
+		latitude:'${traceEnt.latitude!''}',
+		creator:'${traceEnt.creator!''}',
+		batch:'${traceEnt.batch!''}',
+		dirty: '${traceEnt.dirty!''}'
+	}
+	var vm = new Vue({
+		el:'#trace',
+		data:traceEnt
+	});
+</script>
+
+<script>
+	var ifSaleNode = false;
+	$(function() {//datepicker
+		$(".datepicker").datepicker({
+			showMonthAfterYear : true,
+			buttonImageOnly : true,
+			dateFormat : 'yy-mm-dd'
+		});
+		
+		<#if traceEnt?? && traceEnt.id??>
+			$('#traceDirty').prop('value','2');
+		<#else>
+			$('#traceDirty').prop('value','0');
+		</#if>
+		if('' != '${queryArgs.nodeId}')
+			$("select option[value=${queryArgs.nodeId}]").prop('selected','selected');
+		if('6' == '${queryArgs.nodeId}'){
+			$("#trace")[0].style.display='none';
+			$("#sale")[0].style.display='';
+			ifSaleNode = true;
+		}
+		//显示图片
+		showPictures();
+	});
+	
+	function selectChange(element){
+		console.log($(element).val());
+		if($(element).val() == '6'){
+			ifSaleNode = true;
+			$("#nodeId").val($(element).val());
+			$("#trace")[0].style.display='none';
+			$("#sale")[0].style.display='';
+		}else{
+			$("#nodeId").val('');
+			$("#trace")[0].style.display='';
+			$("#sale")[0].style.display='none';
+		}
+	}
+	
+	function showPictures(){
+		$("#divpicture")[0].innerHTML = '';
+		if(null != traceEnt.pictureLink && traceEnt.pictureLink.length	 > 0){
+			var ids = traceEnt.pictureLink.split(',');
+			for(i=0;i<ids.length;i++){
+				$("#divpicture")[0].innerHTML += '<img id="addPicture"  data-id="'+ids[i]+'" src="${webroot}/service/UploadFile.action?id='+ids[i]+'" onclick="return doDelete('+ids[i]+');"/>'
+			}
+		}
+		$("#divpicture")[0].innerHTML += '<img id="addPicture"  data-id="" src="${webroot}/images/picture.png" onclick="return doImportPictures($(this));"/>'		
+	}
+	
+	function doSave(){
+		var el = $("img");
+		console.log(el);
+		pictureList = '';
+		$.each(el,function(i){
+			if(el[i].getAttribute('data-id')){
+				pictureList += el[i].getAttribute('data-id');
+				pictureList += ',';
+			}
+		});
+		var pictureLink = pictureList.substr(0,pictureList.length-1);
+		if(ifSaleNode){
+			doSaveSaleEnt(pictureLink);
+		}else{
+			doSaveTraceEnt(pictureLink);
+		}
+	}
+	
+	function doSaveSaleEnt(pictureLink){
+		saleEnt.startTime = $('input[name=startTime]').val();
+		saleEnt.endTime = $('input[name=endTime]').val();
+		saleEnt.nodeId = $('#selectNode').val();
+		saleEnt.percentage = saleEnt.percentage?saleEnt.percentage:0;
+		saleEnt.totalOutput = saleEnt.totalOutput?saleEnt.totalOutput:0;
+		
+		if(saleEnt.dirty == '1' || saleEnt.dirty == '2'){
+			saleEnt.dirty = '2';
+		}else{
+			saleEnt.dirty = '0'
+		}
+		saleEnt.pictureLink = pictureLink;
+		console.log(saleEnt);
+		$.post("${webroot}/service/TeaTrace.action?verb=put&target=updateTeaSaleInfo",{'entity':JSON.stringify(saleEnt)},function(r){
+			if(r.success){
+				if(null != r.params.entity){
+					saleEnt = JSON.parse(r.params.entity);
+					$("#entId").val(saleEnt.id);
+					$("#nodeId").val(saleEnt.nodeId);
+				}
+				$("#submitForm").submit();
+			}else{
+				alert(r.message);
+			}
+		},'json');
+	}
+	
+	function doSaveTraceEnt(pictureLink){
+		traceEnt.time = $('input[name=time]').val();
+		traceEnt.nodeId = $('#selectNode').val();
+		if(traceEnt.dirty == '1' || traceEnt.dirty == '2'){
+			traceEnt.dirty = '2';
+		}else{
+			traceEnt.dirty = '0'
+		}
+		traceEnt.pictureLink = pictureLink;
+		console.log(traceEnt);
+		$.post("${webroot}/service/TeaTrace.action?verb=put&target=updateTeaTraceInfo",{'entity':JSON.stringify(traceEnt)},function(r){
+			if(r.success){
+				if(null != r.params.entity){
+					traceEnt = JSON.parse(r.params.entity);
+					$("#entId").val(traceEnt.id);
+				}
+				$("#submitForm").submit();
+			}else{
+				alert(r.message);
+			}
+		},'json');
+	}
+	
+	var pictureList = '';
+	var uploadingReady,deleteOk;
+	var loadResult;
+	var imgEl;
+	
+	function doImportPictures(element){
+		if($('input[name=time]').val() == ''){
+			alert('请先填写其他信息');
+			return ;
+		}
+		imgEl = element[0];
+		$("#importDataDlg").removeClass('hide').dialog({
+			autoOpen: true,
+			height: 200,
+			width: 400,
+			modal: true,
+			buttons: {
+				"上传": function() {
+					if(!uploadingReady) {
+						alert("选择要上传的图片！")
+						return; 
+					}
+					uploadingReady = true;
+					
+					$("#importDataForm").submit();
+					$("#importDataDlg").dialog( "close" );
+				},
+				"关闭": function() {
+					$("#importDataDlg").dialog( "close" );
+				}
+			}
+		}).on("dialogclose",function(){
+			$("#importDataDlg").find("table").remove();
+		});
+	}
+
+	
+
+	function importDataResult(){
+		if(uploadingReady){
+			var body = $(window.frames['iframeImport'].document.body);
+			if(null != body){
+				var result = JSON.parse(body.context.textContent);
+				if(result.success){
+					var items = JSON.parse(result.params.items);
+					for(var i=0;i<items.length; i++){
+						console.log(imgEl);
+						imgEl.src = "${webroot}/service/UploadFile.action?id="+items[i].uuid;
+						imgEl.setAttribute('data-id',items[i].uuid);
+					}
+					
+					$("#divpicture")[0].innerHTML += '<img id="addPicture" data-id="" src="${webroot}/images/picture.png" onclick="return doImportPictures($(this));"/>'
+					if(typeof doSave == 'function'){
+						doSave();
+					}
+				}else{
+					alert(result.message);
+				}
+			}
+		}
+	}
+	
+	function doDelete(dataId){
+		$("#pic").val(dataId);
+		$("#deletePicture")[0].src = "${webroot}/service/UploadFile.action?id="+dataId;
+		$("#deleteDataForm")[0].action += dataId;
+		$("#deleteDataDlg").removeClass('hide').dialog({
+				autoOpen: true,
+				height: 400,
+				width: 600,
+				modal: true,
+				buttons: {
+					"删除": function() {
+						deleteOk = true;
+						$("#deleteDataForm").submit();
+						$("#deleteDataDlg").dialog( "close" );
+					},
+					"关闭": function() {
+						$("#deleteDataDlg").dialog( "close" );
+					}
+				}
+			}).on("dialogclose",function(){
+				$("#deleteDataDlg").find("table").remove();
+			});
+	}
+	
+	function deleteDataResult(){
+		if(deleteOk){
+			var body = $(window.frames['iframeDelete'].document.body);
+			if(null != body){
+				var result = JSON.parse(body.context.textContent);
+				if(result.success){
+					$("#divpicture").find('img[data-id='+$("#pic").val()+']').remove();
+					if(typeof doSave == 'function'){
+						doSave();
+					}
+				}else{
+					alert(result.message);
+				}
+			}
+		}
+	}
+</script>
+
+<iframe id="iframeImport" name="iframeImport" style="display: none;" onload="return importDataResult();"></iframe>
+<iframe id="iframeDelete" name="iframeDelete" style="display: none;" onload="return deleteDataResult();"></iframe>

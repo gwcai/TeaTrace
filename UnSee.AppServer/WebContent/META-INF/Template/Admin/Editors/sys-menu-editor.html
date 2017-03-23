@@ -1,0 +1,184 @@
+<div id="${dialog.id}" title="${dialog.title}" class='<#if dialog.className??>${dialog.className}</#if> hide'>
+<form id="editorForm">
+<input id="id" name="id" type="hidden"></input>
+<input id="dirty" name="dirty" type="hidden"></input>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">所属模块</label>
+	<div class="col-sm-9">
+		<select id="module-id" name="moduleId" class="form-control" onchange="return filterFeatures($('option:selected').attr('module'));">
+		<#if modules??>
+		<#list modules as module>
+			<option value="${module.key}" module="${module.getData('code')}">${module.name}</option>
+		</#list>
+		</#if>
+		<option value="0" module=""></option>
+		</select>
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">上级菜单</label>
+	<div class="col-sm-9">
+		<select id="parent-menu-id" name="pid" class="form-control">
+		<#if table.rows??>
+		<#list table.rows as row>
+			<option value="${row.id}">${row.title}</option>
+		</#list>
+		</#if>
+			<option value="-1">根菜单</option>
+		</select>
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">功能串</label>
+	<div class="col-sm-9">
+		<select id="feature-code" name="featureCode" class="form-control">
+		<#if features??>
+		<#list features as feature>
+			<option value="${feature.key}" module="${feature.getData('module')!''}">${feature.name}</option>
+		</#list>
+		</#if>
+			<option value=""></option>
+		</select>
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">菜单标题</label>
+	<div class="col-sm-9">
+		<input type="text" id="title" name="title" placeholder="菜单名称" class="form-control">
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">提示</label>
+	<div class="col-sm-9">
+		<input type="text" id="tips" name="tips" placeholder="菜单提示，一般在鼠标停留时使用" class="form-control">
+	</div>
+</div>
+<div class="form-group">
+	<label class="col-sm-3 control-label no-padding-right" for="name">排序</label>
+	<div class="col-sm-9">
+		<input type="text" id="sort" name="sort" placeholder="数值，决定菜单的次序" class="form-control">
+	</div>
+</div>
+</form>
+</div>
+
+<script type="text/javascript">
+<#if dialog?? && dialog.id??>
+$(document).ready(function($) {
+	(function($){
+		$.fn.serializeJson=function(){
+		var serializeObj={};
+		var array=this.serializeArray();
+		var str=this.serialize();
+		$(array).each(function(){
+		if(serializeObj[this.name]){
+		if($.isArray(serializeObj[this.name])){
+		serializeObj[this.name].push(this.value);
+		}else{
+			serializeObj[this.name]=[serializeObj[this.name],this.value];
+		}
+		}else{
+			serializeObj[this.name]=this.value;
+		}
+		});
+		return serializeObj;
+		};
+	})(jQuery);
+	
+	$(".btn-append").on('click',function(){
+		doNew(null);	
+	});
+	$(".btn-edit").on('click',function(){
+		var uiRow = $(this).parent().parent().parent();
+		var id = uiRow.children("td[data-id]").attr("data-id");
+		doEdit(id);
+	});	
+	$(".btn-remove").on('click',function(){
+		var uiRow = $(this).parent().parent().parent();
+		var id = uiRow.children("td[data-id]").attr("data-id");
+		doRemove(id, uiRow);
+	});	
+});
+</#if>
+
+function doNew() {
+	// reset dialog's children
+	$("#editorForm")[0].reset();
+	$("#id").val(-1);
+	
+	$("#${dialog.id}").removeClass('hide').dialog({
+		autoOpen: true,
+		height: 340,
+		width: 400,
+		modal: true,
+		buttons: {
+			"提交": doSubmit,
+			"取消": function() {
+				$("#${dialog.id}").dialog( "close" );
+			}
+		}
+	});
+}
+
+function doEdit(id) {
+	if(id == null) return;
+	$.post("${dialog.getActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			var ent = jQuery.parseJSON(r.params.entity);
+			$("#id").val(ent.id);			
+			$("#title").val(ent.title);
+			$("#tips").val(ent.tips);
+			$("#sort").val(ent.sort);
+			$("#module-id option[value='"+ent.moduelId+"']").prop("selected", "selected");
+			$("#parent-menu-id option[value='"+ent.pid+"']").prop("selected", "selected");
+			$("#feature-code option[value='"+ent.featureCode+"']").prop("selected", "selected");
+			
+			$("#${dialog.id}").removeClass('hide').dialog({
+				autoOpen: true,
+				height: 340,
+				width: 400,
+				modal: true,
+				buttons: {
+					"提交": doSubmit,
+					"取消": function() {
+						$("#${dialog.id}").dialog( "close" );
+					}
+				}
+			});
+		}
+	},'json');
+}
+
+function doSubmit() {
+	if($("#id").val() == "-1")
+		$("#dirty").val(0); // GAIAEntity.NEW_DIRTY
+	else
+		$("#dirty").val(2); // GAIAEntity.MODIFY_DIRTY
+	
+	$.post("${dialog.updateActionUrl!''}",{entity: JSON.stringify($("#editorForm").serializeJson())},function(r){
+		if(r.success) {
+			$("#${dialog.id}").dialog( "close" );
+			window.location = window.location;
+		} 			
+		else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function doRemove(id, row) {
+	if(!confirm("确定要删除该记录吗？")) return;
+	$.post("${dialog.removeActionUrl!''}",{id:id},function(r){
+		if(r.success) {
+			$(row).remove()
+		} else {
+			alert(r.message);
+		}
+	},'json');
+}
+
+function filterFeatures(module) {
+	$("#feature-code option").hide();
+	$("#feature-code option[module='"+module+"']").show();
+}
+</script>
