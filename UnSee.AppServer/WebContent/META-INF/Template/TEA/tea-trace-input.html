@@ -191,9 +191,9 @@ var traceEnt = {
 		<#else>
 			$('#traceDirty').prop('value','0');
 		</#if>
-		if('' != '${queryArgs.nodeId}')
-			$("select option[value=${queryArgs.nodeId}]").prop('selected','selected');
-		if('6' == '${queryArgs.nodeId}'){
+		if('' != '${queryArgs.nodeId!''}')
+			$("select option[value=${queryArgs.nodeId!''}]").prop('selected','selected');
+		if('6' == '${queryArgs.nodeId!''}'){
 			$("#trace")[0].style.display='none';
 			$("#sale")[0].style.display='';
 			ifSaleNode = true;

@@ -1,5 +1,4 @@
 <%@page import="com.unsee.gaia.biz.ibatis.RowBoundsEx"%>
-<%@page import="org.apache.commons.beanutils.DynaBeanPropertyMapDecorator"%>
 <%@page import="com.unsee.util.StringUtil" %>
 <%@page import="java.util.*"%>
 <%@page import="java.text.*"%>
@@ -16,14 +15,11 @@
 <%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
 	final String VIEW_CODE = "tea_trace_view";
-	
-	SysObjectsService sos = new SysObjectsService("SysObjectsBroker");
+	final String SALE_VIEW_CODE = "tea_batch_sale_info";
+
 	Map queryMap = new HashMap();
-	queryMap.put("objectCode", VIEW_CODE);
-	SysObjectsEntity soe = (SysObjectsEntity)sos.getEntityByRequest(queryMap);
 	HashMap<String,Object> variables = new HashMap<String,Object>();
-	
-	variables.put("soe",soe);
+
 	variables.put("title", "茶叶信息管理");	
 	variables.put("contentPage", "/TEA/tea-trace-list.html");
 	//获取服务器IP
@@ -33,12 +29,7 @@
 		serverIp = "localhost";
 	}
 	variables.put("serverIp", serverIp);
-		
-	if(!StringUtil.isNullOrEmpty(request.getParameter("node")))
-		variables.put("node",request.getParameter("node"));
-	
-	if(!StringUtil.isNullOrEmpty(request.getParameter("batch")))
-		variables.put("batch",request.getParameter("batch"));
+	variables.put("queryArgs", RequestUtil.requestParameterToMap(request));
 	
 	try
 	{	
@@ -60,35 +51,61 @@
 	}catch(Exception ex){
 		pageIndex = 0;
 	}
+	
 	Pagination pagination = new Pagination();
 	RowBoundsEx rowBounds = new RowBoundsEx(pageIndex,pageSize);
-	DBQueryCodeSetProvider provider = new DBQueryCodeSetProvider();
-	queryMap = RequestUtil.requestParameterToMap(request);
-	List<?> list = sos.querySystemViewByCodeName(VIEW_CODE, queryMap, provider, new IWhereProvider(){
-		@Override
-		public String buildWhere() {
-			StringBuffer sb = new StringBuffer(" 1=1 ");
-			if(!StringUtil.isNullOrEmpty(request.getParameter("node"))){
-				if(!"0".equalsIgnoreCase(request.getParameter("node")))
-					sb.append("AND nodeId="+request.getParameter("node"));
-			}
-			if(!StringUtil.isNullOrEmpty(request.getParameter("batch"))){
-				sb.append("AND batch like '%"+request.getParameter("batch") + "%'");
-			}
-			return sb.toString();
+	
+	SysObjectsService sos = new SysObjectsService("SysObjectsBroker");
+	SysObjectsEntity soe = null;
+	TableTemplate tableTmpl = new TableTemplate();
+	tableTmpl.setTitle("节点信息管理");
+	tableTmpl.setSubTitle("茶叶节点信息查询");
+
+	if(!StringUtil.isNullOrEmpty(request.getParameter("batch"))){
+		if(!"6".equals(request.getParameter("nodeId"))){
+			queryMap.clear();
+			queryMap.put("objectCode", VIEW_CODE);
+			soe = (SysObjectsEntity)sos.getEntityByRequest(queryMap);
+			tableTmpl.setColumns(TableColumn.convertSysObjectPropsToColumns(soe));	
+			DBQueryCodeSetProvider provider = new DBQueryCodeSetProvider();
+			tableTmpl.setRows(sos.querySystemViewByCodeName(VIEW_CODE, RequestUtil.requestParameterToMap(request), provider, new IWhereProvider(){
+				@Override
+				public String buildWhere() {
+					StringBuffer sb = new StringBuffer(" 1=1 ");
+					if(!StringUtil.isNullOrEmpty(request.getParameter("nodeId"))){
+						if(!"0".equalsIgnoreCase(request.getParameter("nodeId")))
+							sb.append(" AND node_id="+request.getParameter("nodeId"));
+					}
+					if(!StringUtil.isNullOrEmpty(request.getParameter("batch"))){
+						sb.append(" AND batch like '%"+request.getParameter("batch") + "%'");
+					}
+					return sb.toString();
+				}
+			}, "Simple", rowBounds));
+		}else{
+			queryMap.clear();
+			queryMap.put("objectCode", SALE_VIEW_CODE);
+			soe = (SysObjectsEntity)sos.getEntityByRequest(queryMap);
+			tableTmpl.setColumns(TableColumn.convertSysObjectPropsToColumns(soe));
+			DBQueryCodeSetProvider provider = new DBQueryCodeSetProvider();
+			tableTmpl.setRows(sos.querySystemViewByCodeName(SALE_VIEW_CODE, RequestUtil.requestParameterToMap(request), provider, new IWhereProvider(){
+				@Override
+				public String buildWhere() {
+					StringBuffer sb = new StringBuffer(" 1=1 ");
+					if(!StringUtil.isNullOrEmpty(request.getParameter("batch"))){
+						sb.append(" AND batch like '%"+request.getParameter("batch") + "%'");
+					}
+					return sb.toString();
+				}
+			}, "Simple", rowBounds));
 		}
-	}, "Simple", rowBounds);
+	}
 	
 	pagination.setSize(pageSize);
 	pagination.setIndex(pageIndex);
 	pagination.setCount(rowBounds.getRowCount());
 	pagination.setTotal(rowBounds.getPageTotal());
-	
-	TableTemplate tableTmpl = new TableTemplate();
-	tableTmpl.setTitle("节点信息管理");
-	tableTmpl.setSubTitle("茶叶节点信息查询");
-	tableTmpl.setRows(list);
-	tableTmpl.setColumns(TableColumn.convertSysObjectPropsToColumns(soe));
+	tableTmpl.setPagination(pagination);
 	variables.put("table", tableTmpl);
 	
 	PageRender render = new PageRender(getServletContext(), "/META-INF/Template/", "/Admin/content.html", variables);

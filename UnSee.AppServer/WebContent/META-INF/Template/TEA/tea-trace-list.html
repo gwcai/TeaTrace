@@ -72,18 +72,18 @@
 			<div class="col-sm-3">
 				<div class="input-group">
 					<label class="input-group-addon">输入批次</label>
-					<input name="batch" class="form-control" value="${batch!''}">
+					<input id="batch" name="batch" class="form-control" value="${queryArgs.batch!''}">
 				</div>
 			</div>
 			<div class="col-sm-3">
 				<div class="input-group">
 					<label class="input-group-addon">选择节点</label>
-					<select name="nodeList" class="form-control" onchange="">
-						<option name="node" value="0">-所有节点-</option>
+					<select id="nodeId" name="nodeId" class="form-control" onchange="">
+						<option value="0">-所有节点-</option>
 						<#if dictNode??>
 							<#list dictNode.toArray() as item>
 							<#if item??>
-							<option name="node" value="${item.key}">${item.name}</option>
+							<option value="${item.key}">${item.name}</option>
 							</#if>
 							</#list>
 						</#if>
@@ -95,16 +95,16 @@
 			</div>
 			</form>
 			<div class="col-sm-2" >
-				<button class="btn btn-sm btn-success" onclick="return doQRCode('${batch!''}')">生成二维码</button>
+				<button class="btn btn-sm btn-success" onclick="return doQRCode()">生成二维码</button>
 			</div>
 		</div>
 	</div>
 
 	<div class="panel-body">
-		<table class="table" id="order-table">
+		<table class="table" id="trace">
 			<thead>
 				<tr class="columns">
-					<#if table??>
+					<#if table?? && table.columns??>
 					<#list table.columns as column>
 						<th <#if column.className??>class="${column.className} <#if !column.visible>hide</#if>"</#if> <#if column.pk?? && column.pk>data-id="${column.fieldName}"</#if> <#if column.fieldName??>column-name="${column.fieldName}"</#if>>${column.name}</th>
 					</#list>
@@ -170,6 +170,10 @@ $(document).ready(function(){
 		console.log($(this).parent().parent().parent());
 		doRemove($(this).parent().parent().parent().find(".id").text());
 	});
+	
+	//选中节点设置
+	if('' != '${queryArgs.nodeId!''}')
+		$("select option[value=${queryArgs.nodeId!''}]").prop('selected','selected');
 });
 
 function doAdd() {
@@ -177,7 +181,8 @@ function doAdd() {
 }
 
 function doEdit(id){
-	window.location = "${webroot}/TEA/tea-trace-input.jsp?featureCode=menu.tea.info.input&id=" + id;
+	window.location = "${webroot}/TEA/tea-trace-input.jsp?featureCode=menu.tea.info.input&id=" + id
+			+"&nodeId="+$("#nodeId").val();
 }
 
 function doRemove(id){
@@ -192,8 +197,9 @@ function doRemove(id){
 	}
 }
 
-function doQRCode(batch){
-	if(0 == batch || '' == batch){
+function doQRCode(){
+	var batch = $("#batch").val();
+	if(null == batch || '' == batch){
 		alert('无批次信息');
 		return ;
 	}
