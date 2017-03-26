@@ -183,8 +183,8 @@ var traceEnt = {
 		$(".datepicker").datepicker({
 			showMonthAfterYear : true,
 			buttonImageOnly : true,
-			dateFormat : 'yy-mm-dd',
-			defaultDate: new Date()
+			defaultDate: '+1d',
+			dateFormat : 'yy-mm-dd'
 		});
 		
 		<#if traceEnt?? && traceEnt.id??>
