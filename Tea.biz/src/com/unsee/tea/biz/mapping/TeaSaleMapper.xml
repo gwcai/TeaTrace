@@ -47,6 +47,6 @@
 	</update>
 
 	<delete id="DeleteTeaSale" parameterType="Map">
-		DELETE FROM sale WHERE id=#{id}
+		DELETE FROM sale WHERE batch=#{batch}
 	</delete>
 </mapper>

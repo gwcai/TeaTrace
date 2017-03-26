@@ -18,6 +18,7 @@
 <%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
 	final String VIEW_CODE = "tea_batch_trace_view";
+	final String SALE_VIEW_CODE = "tea_batch_sale_info";
 	
 	SysObjectsService sos = new SysObjectsService("SysObjectsBroker");
 	Map queryMap = new HashMap();
@@ -71,6 +72,29 @@
 	tableTmpl.setSubTitle("茶叶批次信息");
 	tableTmpl.setColumns(TableColumn.convertSysObjectPropsToColumns(soe));
 	variables.put("table", tableTmpl);
+	
+	TableTemplate tmpl = new TableTemplate();
+	queryMap.clear();
+	queryMap.put("objectCode", SALE_VIEW_CODE);
+	soe = (SysObjectsEntity)sos.getEntityByRequest(queryMap);
+	tmpl.setColumns(TableColumn.convertSysObjectPropsToColumns(soe));
+	
+	if(!StringUtil.isNullOrEmpty(request.getParameter("batch"))){
+		DBQueryCodeSetProvider provider = new DBQueryCodeSetProvider();
+		queryMap = RequestUtil.requestParameterToMap(request);
+		List<?> list = sos.querySystemViewByCodeName(SALE_VIEW_CODE, queryMap, provider, new IWhereProvider(){
+			@Override
+			public String buildWhere() {
+				StringBuffer sb = new StringBuffer(" 1=1 ");
+				sb.append("AND batch like '%"+request.getParameter("batch") + "%'");
+				return sb.toString();
+			}
+		}, "Simple");
+		tmpl.setRows(list);
+	}
+	tmpl.setTitle("茶叶批次信息");
+	tmpl.setSubTitle("茶叶批次信息");
+	variables.put("saleTable", tmpl);
 	
 	PageRender render = new PageRender(getServletContext(), "/META-INF/Template/", "/Admin/content.html", variables);
 	render.render(out);

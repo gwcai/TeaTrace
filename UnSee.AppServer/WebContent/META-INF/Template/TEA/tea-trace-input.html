@@ -96,26 +96,26 @@
 		<div class="panel-title row" style="margin:10px 0 0 0;">
 			<div class="col-sm-2"><span>录入节点信息</span></div>
 			<div class="col-sm-3">
-				<div class="input-group">
-					<label class="input-group-addon">选择节点</label> 
-					<select id="selectNode" class="form-control" value="${queryArgs.nodeId!''}" onchange="return selectChange($(this));">
-						<#if dictNode??> 
-						<#list dictNode.toArray() as item>
-							<#if item??>
-								<option value="${item.key}">${item.name}</option>
+				<div class="row">
+					<form method="get" id="submitForm">
+					<input type="hidden" id="entId" name="id"></input>
+					<div class="input-group">
+						<label class="input-group-addon">选择节点</label> 
+						<select id="nodeId" name="nodeId" class="form-control" value="${queryArgs.nodeId!''}" onchange="return selectChange($(this));">
+							<option value='0'></option>
+							<#if dictNode??> 
+							<#list dictNode.toArray() as item>
+								<#if item??>
+									<option value="${item.key}">${item.name}</option>
 								</#if>
-							</#list> </#if>
-					</select>
+								</#list> </#if>
+						</select>
+					</div>
 				</div>
 			</div>
 			<div class="col-sm-1"></div>
-			<div class="col-sm-2">
-				<form method="get" id="submitForm">
-					<input type="hidden" id="entId" name="id"></input>
-					<input type="hidden" id="nodeId" name="nodeId"></input>
-					<button class="btn btn-sm btn-success" onclick="return doSave();">提交</button>
-				</form>
-			</div>
+			<div class="col-sm-2"><button class="btn btn-sm btn-success" onclick="return doSave();">提交</button></div>
+			</form>
 		</div>
 	</div>
 
@@ -207,14 +207,14 @@ var traceEnt = {
 		console.log($(element).val());
 		if($(element).val() == '6'){
 			ifSaleNode = true;
-			$("#nodeId").val($(element).val());
 			$("#trace")[0].style.display='none';
 			$("#sale")[0].style.display='';
 		}else{
-			$("#nodeId").val('');
 			$("#trace")[0].style.display='';
 			$("#sale")[0].style.display='none';
 		}
+		$("#entId").val('');
+		$("#submitForm").submit();
 	}
 	
 	function showPictures(){
@@ -249,7 +249,7 @@ var traceEnt = {
 	function doSaveSaleEnt(pictureLink){
 		saleEnt.startTime = $('input[name=startTime]').val();
 		saleEnt.endTime = $('input[name=endTime]').val();
-		saleEnt.nodeId = $('#selectNode').val();
+		saleEnt.nodeId = $('#nodeId').val();
 		saleEnt.percentage = (saleEnt.percentage?saleEnt.percentage:0);
 		saleEnt.totalOutput = saleEnt.totalOutput?saleEnt.totalOutput:0;
 		
@@ -260,23 +260,43 @@ var traceEnt = {
 		}
 		saleEnt.pictureLink = pictureLink;
 		console.log(saleEnt);
-		$.post("${webroot}/service/TeaTrace.action?verb=put&target=updateTeaSaleInfo",{'entity':JSON.stringify(saleEnt)},function(r){
+		$.post("${webroot}/service/TeaTrace.action?verb=put&target=updateTeaSaleInfo",{entity:JSON.stringify(saleEnt)},function(data){
+			var r = data;
 			if(r.success){
 				if(null != r.params.entity){
 					saleEnt = JSON.parse(r.params.entity);
 					$("#entId").val(saleEnt.id);
 					$("#nodeId").val(saleEnt.nodeId);
+					$("#submitForm").submit();
 				}
-				$("#submitForm").submit();
 			}else{
-				alert(r.message);
+				if(null != r.params.exists){
+					var s = confirm("销售信息已经存在，是否覆盖之前信息？");
+					if(s == true){
+						//再次提交
+						$.post("${webroot}/service/TeaTrace.action?verb=put&target=updateTeaSaleInfo",{entity:JSON.stringify(saleEnt),IgnoreRepeat:'true'},function(d){
+							if(d.success){
+								if(null != d.params.entity){
+									saleEnt = JSON.parse(d.params.entity);
+									$("#entId").val(saleEnt.id);
+									$("#nodeId").val(saleEnt.nodeId);
+									$("#submitForm").submit();
+								}
+							}else{
+								alert(r.message);
+							}
+						},'json');
+					}
+				}else{
+					alert(r.message);
+				}
 			}
 		},'json');
 	}
 	
 	function doSaveTraceEnt(pictureLink){
 		traceEnt.time = $('input[name=time]').val();
-		traceEnt.nodeId = $('#selectNode').val();
+		traceEnt.nodeId = $('#nodeId').val();
 		if(traceEnt.dirty == '1' || traceEnt.dirty == '2'){
 			traceEnt.dirty = '2';
 		}else{
@@ -289,8 +309,9 @@ var traceEnt = {
 				if(null != r.params.entity){
 					traceEnt = JSON.parse(r.params.entity);
 					$("#entId").val(traceEnt.id);
+					$("#nodeId").val(traceEnt.nodeId);
+					$("#submitForm").submit();
 				}
-				$("#submitForm").submit();
 			}else{
 				alert(r.message);
 			}

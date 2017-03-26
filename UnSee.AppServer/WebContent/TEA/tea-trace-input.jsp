@@ -33,18 +33,26 @@
 	variables.put("queryArgs", RequestUtil.requestParameterToMap(request));
 	
 	String id = request.getParameter("id");
+	
+	TeaSaleEntity saleEntity = null;
+	TeaTraceEntity traceEntity = null;
+	
 	if(!StringUtil.isNullOrEmpty(id)){
 		if("6".equalsIgnoreCase(request.getParameter("nodeId"))){
-			variables.put("saleEnt", TeaSaleService.getInstance().getEntity(id));
-			variables.put("traceEnt", new TeaTraceEntity());
+			saleEntity = (TeaSaleEntity)TeaSaleService.getInstance().getEntity(id);
 		}else{
-			variables.put("traceEnt", TeaTraceService.getInstance().getEntity(id));
-			variables.put("saleEnt", new TeaSaleEntity());
+			traceEntity = (TeaTraceEntity)TeaTraceService.getInstance().getEntity(id);
 		}
-	}else{
-		variables.put("traceEnt", new TeaTraceEntity());
-		variables.put("saleEnt", new TeaSaleEntity());
 	}
+	
+	if(null == saleEntity){
+		saleEntity= new TeaSaleEntity();
+	}
+	if(null == traceEntity){
+		traceEntity = new TeaTraceEntity();
+	}
+	variables.put("saleEnt", saleEntity);
+	variables.put("traceEnt", traceEntity);
 	
 	try
 	{	

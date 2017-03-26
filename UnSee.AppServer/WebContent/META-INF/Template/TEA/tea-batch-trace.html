@@ -6,123 +6,116 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <script type="text/javascript" src="${webroot}/js/jquery-2.1.1.js"></script>
 
-<link rel="stylesheet" href="${webroot}/nivo-slider/themes/default/default.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="${webroot}/nivo-slider/themes/light/light.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="${webroot}/nivo-slider/themes/dark/dark.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="${webroot}/nivo-slider/nivo-slider.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="${webroot}/nivo-slider/style.css" type="text/css" media="screen" />
-
-<link rel="stylesheet" href="${webroot}/swipe/style.css" type="text/css"/>
+<link rel="stylesheet" href="${webroot}/swiper/v3.4.2/css/swiper.min.css" type="text/css"/>
 </head>
 <style type="text/css">
 body {
-    background-color: white;
-    z-index:-1;
+	background-color: white;
+	z-index: -1;
 }
+
 a {
-    text-decoration: none;
-    color: #333;
+	text-decoration: none;
+	color: #333;
 }
+
 a:hover, a:focus {
-    color: #333;
-    text-decoration: none;
+	color: #333;
+	text-decoration: none;
 }
-li,ul {
-    list-style: none;
-    padding: 0;
+
+li, ul {
+	list-style: none;
+	padding: 0;
 }
 
 .topbox {
-    height: 90px;
-    width:100%;
-    background-color: white;
-    position: fixed;
-    top: 0;
-    z-index:10;
-    border-bottom: 1px solid #31d218;
-}
-.logo{
-	margin:0;
-	padding:0;
-	height:100%;
-}
-.logo > img{
-	width:80px;
-	height:80px;
+	height: 90px;
+	width: 100%;
+	background-color: white;
+	position: fixed;
+	top: 0;
+	z-index: 10;
+	border-bottom: 1px solid #31d218;
 }
 
-.glyphicon-list{
-    right:0;
-    font-size: 1.6em;
-    line-height: 40px;
-    top:45px;
+.logo {
+	margin: 0;
+	padding: 0;
+	height: 100%;
 }
+
+.logo>img {
+	width: 80px;
+	height: 80px;
+}
+
+.glyphicon-list {
+	right: 0;
+	font-size: 1.6em;
+	line-height: 40px;
+	top: 45px;
+}
+
 .title {
-    display: block;
-    font-size: 1.4em;
-    font-weight: bold;
-    color: #31D218;
-    background-color: white;
-    padding: 10px;
+	display: block;
+	font-size: 1.4em;
+	font-weight: bold;
+	color: #31D218;
+	background-color: white;
+	padding: 10px;
 }
 
-.info{
-	margin-left:10px;
+.info {
+	margin-left: 10px;
+	z-index: -1;
 }
-.info > li {
-    border-bottom: 1px solid #eee;
-    padding: 10px 0;
+
+.info>li {
+	border-bottom: 1px solid #eee;
+	padding: 10px 0;
 }
-.page-content{
-	margin:auto;
-    z-index:-1;
-    width:100%;
-    height:800px;
-    padding-top:80px;
+
+.page-content {
+	margin: auto;
+	width: 100%;
+	height: 850px;
+	padding-top: 80px;
 }
-.showCode{
-	text-decoration:underline;
-	border:none;
+
+.showCode {
+	text-decoration: underline;
+	border: none;
 	background: none;
-}
-.slider-wrapper {
-        width: 95%;
-        margin:0 0 0 10px;
-}
-.nivo-control{
-	z-index: 3;
-}
-    
-.swipe {
-  z-index:-1;
-  overflow: hidden;
-  visibility: hidden;
-  position: relative;
-  width:100%;
-  background-color: white;
-}
-.swipe-wrap {
-  z-index:-1;
-  overflow: hidden;
-  position: relative;
-  width:100%;
-  height:100%;
-}
-.swipe-wrap > div {
-  float:left;
-  width:100%;
-  position: relative;
 }
 
 .footer {
-	text-align:center;
-    height: 30px;
-    width:100%;
-    background-color: white;
-    position: fixed;
-    bottom: 0;
-    z-index:2;
-    border-bottom: 1px solid #31d218;
+	text-align: center;
+	height: 30px;
+	width: 100%;
+	background-color: white;
+	position: fixed;
+	bottom: 0;
+	z-index: 2;
+	border-bottom: 1px solid #31d218;
+}
+
+<!--swiper-->
+.swiper-pagination-h{
+	
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.swiper-container-picture {
+	width: 100%;
+	height: 350px;
+}
+
+.swiper-container-picture>img {
+	width: 100%;
+	height: 100%;
+	margin: auto;
 }
 </style>
 
@@ -143,36 +136,69 @@ li,ul {
     		</div>
     	</#if>
     </div>
-    <div id='mySwipe' class='swipe'>
-  		<div class='swipe-wrap'>
+    <div class="swiper-container swiper-container-h">
+  		<div class="swiper-wrapper">
 	   		<#if table?? && table.rows??>
-			<#list table.rows as row>
-			<div class="wrap">
-			   	<a class="title container-fluid" name="step${row['nodeid']}">${row['lkup_nodeid']}</a> 
-			   	<#if row['picturelink']??>
-				<div class="slider-wrapper theme-default">
-					<div id="slider" class="nivoSlider">
+				<#list table.rows as row>
+				<div class="swiper-slide">
+					<a class="title container-fluid" >${row['lkup_nodeid']}</a>
+					<#if row['picturelink']?? && row['picturelink']?length&gt;0>
+					<div class="swiper-container swiper-container-picture swiper-container-${row['id']}">
+					   	<div class="swiper-wrapper">
 						<#list row.picturelink?split(',') as picture>
-						   <img src="http://${serverIp!''}:8080${webroot}/service/UploadFile.action?id=${picture}">
+							<div class="swiper-slide">
+								<img data-src="http://${serverIp!''}:8080${webroot}/service/UploadFile.action?id=${picture}" class="swiper-lazy">
+								<div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+							</div>
 						</#list>
+						</div>
+						<div class="swiper-pagination swiper-pagination-${row['id']}"></div>
 					</div>
+					</#if>
+					<ul class="info">
+						<#list table.columns as column>
+						<li class="<#if column.className??>${column.className}</#if> <#if !column.visible>hide</#if>">
+							<#if column.name??>${column.name}</#if>:
+							<#if row[column.fieldName]??>${row[column.fieldName]}</#if>
+						</li>
+						</#list>
+					</ul>
 				</div>
-			    </#if>
-				<ul class="info">
-					<#list table.columns as column>
-					<li class="<#if column.className??>${column.className}</#if> <#if !column.visible>hide</#if>">
-						<#if column.name??>${column.name}</#if>:
-						<#if row[column.fieldName]??>${row[column.fieldName]}</#if>
-					</li>
-					</#list>
-				</ul>
-			</div>
 		    </#list>
 			</#if>
+			<#if saleTable?? && saleTable.rows??>
+			<#list saleTable.rows as row>
+				<div class="swiper-slide">
+				   	<a class="title container-fluid" >${row['lkup_nodeid']}</a> 
+					<#if row['picturelink']?? && row['picturelink']?length&gt;0>
+				   	<div class="swiper-container swiper-container-picture swiper-container-sale-${row['id']}">
+				   		<div class="swiper-wrapper">
+							<#list row.picturelink?split(',') as picture>
+							<div class="swiper-slide">
+								<img data-src="http://${serverIp!''}:8080${webroot}/service/UploadFile.action?id=${picture}" class="swiper-lazy">
+								<div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+							</div>
+							</#list>
+						</div>
+						<div class="swiper-pagination swiper-pagination-sale-${row['id']}"></div>
+					</div>
+					</#if>
+					<ul class="info">
+						<#list saleTable.columns as column>
+						<li class="<#if column.className??>${column.className}</#if> <#if !column.visible>hide</#if>">
+							<#if column.name??>${column.name}</#if>:
+							<#if row[column.fieldName]??>${row[column.fieldName]}</#if>
+						</li>
+						</#list>
+					</ul>
+				</div>
+			</#list>
+			</#if>
 		</div>
+		
 	</div>
 	<div class="footer">
-		<<<<滑动查看更多信息>>>>
+		<div class="swiper-pagination swiper-pagination-h"></div>
 	</div>
 	<!-- 显示二维码 -->
 	<div class="modal fade in" id="qrModal" tabindex="-1" role="dialog"
@@ -186,33 +212,44 @@ li,ul {
 		</div>
 	</div>
 
-<script type="text/javascript" src="${webroot}/swipe/swipe.js"></script>
-<script type="text/javascript" src="${webroot}/nivo-slider/jquery.nivo.slider.pack.js"></script>
+<script type="text/javascript" src="${webroot}/swiper/v3.4.2/js/swiper.min.js"></script>
 <script type="text/javascript">
-$(document).ready(function(){    
-    $('.nivoSlider').nivoSlider({
-	    	manualAdvance:true,
-	    	directionNav:true,
-	    	directionNavHide:true,
-	    	controlNav:true,
-	    	keyboardNav:true,
-	    	animSpeed:500	//图片切换速度
-    	});
-    
- // pure JS
-    var elem = document.getElementById('mySwipe');
-    window.mySwipe = Swipe(elem, {
-      // startSlide: 4,
-      // auto: 3000,
-      continuous: false,//是否自动播放
-      // disableScroll: true,
-      stopPropagation: true,
-      callback: function(index, element) {alert(index);},
-      transitionEnd: function(index, element) {}
+$(document).ready(function(){        
+	var swiperH = new Swiper('.swiper-container-h', {
+        pagination: '.swiper-pagination-h',
+        paginationClickable: true,
+        spaceBetween: 50
     });
-
-    // with jQuery
-    // window.mySwipe = $('#mySwipe').Swipe().data('Swipe');
+	
+ 	<#if table?? && table.rows??>
+	<#list table.rows as row>
+	    var swiper = new Swiper('.swiper-container-${row['id']}', {
+	        pagination: '.swiper-pagination-${row['id']}',
+	        paginationClickable: true,
+	        spaceBetween: 50,
+	        effect: 'fade',
+	     	// Disable preloading of all images
+	        preloadImages: false,
+	        // Enable lazy loading
+	        lazyLoading: true
+	    });
+	  </#list>
+	 </#if> 
+	 
+	 <#if saleTable?? && saleTable.rows??>
+		<#list saleTable.rows as row>
+		    var swiper = new Swiper('.swiper-container-sale-${row['id']}', {
+		        pagination: '.swiper-pagination-sale-${row['id']}',
+		        paginationClickable: true,
+		        spaceBetween: 50,
+		        effect: 'fade',
+		     	// Disable preloading of all images
+		        preloadImages: false,
+		        // Enable lazy loading
+		        lazyLoading: true
+		    });
+		  </#list>
+		 </#if> 
 });
 </script>
  </body>

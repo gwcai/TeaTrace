@@ -1,14 +1,13 @@
 package com.unsee.tea.web.servlet;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import javax.imageio.ImageIO;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.Response;
-
 import com.unsee.gaia.biz.entities.GAIAEntity;
 import com.unsee.gaia.biz.entities.TempAttachmentsEntity;
 import com.unsee.gaia.biz.services.TempAttachmentsService;
@@ -20,7 +19,6 @@ import com.unsee.tea.biz.entities.TeaTraceEntity;
 import com.unsee.tea.biz.services.TeaSaleService;
 import com.unsee.tea.biz.services.TeaTraceService;
 import com.unsee.util.StringUtil;
-import com.unsee.util.qrcode.QRCodeHelper;
 import com.unsee.util.qrcode.QRCodeUtil;
 
 public class TeaTraceServlet extends RESTServlet{
@@ -122,8 +120,16 @@ public class TeaTraceServlet extends RESTServlet{
 		try{
 			logger.debug("entity"+request.getParameter("entity"));
 			TeaSaleEntity ent = (TeaSaleEntity) fromJSON(request.getParameter("entity"), TeaSaleEntity.class);
-			
 			if(null == ent) throw new Exception("参数错误");
+			
+			if(GAIAEntity.NEW_DIRTY == ent.getDirty() && StringUtil.isNullOrEmpty(request.getParameter("IgnoreRepeat"))){
+				//判断重复
+				List tmp = TeaSaleService.getInstance().listSalesByBatch(ent.getBatch());
+				if(null != tmp && tmp.size() > 0){
+					result.addParams("exists", "true");
+					throw new Exception("已存在");
+				}
+			}
 			
 			if(ent.getDirty() == GAIAEntity.NEW_DIRTY || ent.getDirty() == GAIAEntity.MODIFY_DIRTY){
 				TeaSaleService.getInstance().updateEntity(ent);
@@ -135,6 +141,7 @@ public class TeaTraceServlet extends RESTServlet{
 		}catch(Exception ex){
 			result.setMessage(ex.getMessage());
 			result.setSuccess(false);
+			logger.error(ex);
 		}
 		return result;
 	}
