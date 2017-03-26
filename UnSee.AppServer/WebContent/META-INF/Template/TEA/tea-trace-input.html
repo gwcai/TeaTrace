@@ -183,7 +183,8 @@ var traceEnt = {
 		$(".datepicker").datepicker({
 			showMonthAfterYear : true,
 			buttonImageOnly : true,
-			dateFormat : 'yy-mm-dd'
+			dateFormat : 'yy-mm-dd',
+			defaultDate: new Date()
 		});
 		
 		<#if traceEnt?? && traceEnt.id??>
@@ -249,7 +250,7 @@ var traceEnt = {
 		saleEnt.startTime = $('input[name=startTime]').val();
 		saleEnt.endTime = $('input[name=endTime]').val();
 		saleEnt.nodeId = $('#selectNode').val();
-		saleEnt.percentage = saleEnt.percentage?saleEnt.percentage:0;
+		saleEnt.percentage = (saleEnt.percentage?saleEnt.percentage:0);
 		saleEnt.totalOutput = saleEnt.totalOutput?saleEnt.totalOutput:0;
 		
 		if(saleEnt.dirty == '1' || saleEnt.dirty == '2'){
@@ -302,10 +303,6 @@ var traceEnt = {
 	var imgEl;
 	
 	function doImportPictures(element){
-		if($('input[name=time]').val() == ''){
-			alert('请先填写其他信息');
-			return ;
-		}
 		imgEl = element[0];
 		$("#importDataDlg").removeClass('hide').dialog({
 			autoOpen: true,
@@ -331,8 +328,6 @@ var traceEnt = {
 			$("#importDataDlg").find("table").remove();
 		});
 	}
-
-	
 
 	function importDataResult(){
 		if(uploadingReady){
