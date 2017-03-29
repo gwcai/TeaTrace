@@ -7,6 +7,7 @@
 <script type="text/javascript" src="${webroot}/js/jquery-2.1.1.js"></script>
 
 <link rel="stylesheet" href="${webroot}/swiper/v3.4.2/css/swiper.min.css" type="text/css"/>
+
 </head>
 <style type="text/css">
 body {
@@ -106,16 +107,21 @@ li, ul {
 }
 
 .swiper-container-picture {
-	width: 100%;
-	height: 350px;
+	height:350px;
 	padding-bottom:30px;
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
 }
 
-img {
+.swiper-container-picture img {
 	max-width: 100%;
 	height: 100%;
 	width: auto;
-	margin: 0px 1px 1px 2px;
+	margin: 0px 3px 1px -5px;
+	z-index:-1;
+	min-width: 100%; 
+	vertical-align: middle;
 }
 </style>
 
@@ -146,7 +152,7 @@ img {
 					<div class="swiper-container swiper-container-picture swiper-container-${row['id']}">
 					   	<div class="swiper-wrapper">
 						<#list row.picturelink?split(',') as picture>
-							<div class="swiper-slide">
+							<div class="swiper-slide nivoSlider">
 								<img data-src="http://${serverIp!''}:8080${webroot}/service/UploadFile.action?id=${picture}" class="swiper-lazy">
 								<div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
 							</div>
@@ -194,8 +200,7 @@ img {
 				</div>
 			</#list>
 			</#if>
-		</div>
-		
+		</div>		
 	</div>
 	<div class="footer">
 		<div class="swiper-pagination swiper-pagination-h"></div>
