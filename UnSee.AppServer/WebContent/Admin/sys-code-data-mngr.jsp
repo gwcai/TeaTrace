@@ -31,10 +31,13 @@
 	tableTmpl.setSubTitle("对系统代码集进行管理");
 	
 	tableTmpl.setColumns(TableColumn.convertSysObjectPropsToColumns(soe));
-	
-	DictionaryManager dictionaryManager = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext()).getBean(DictionaryManager.class);
-	Dictionary dictModules = dictionaryManager.getDictionary(DICTIONARY_CATALOGS, true);
-	
+	try{
+		DictionaryManager dictionaryManager = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext()).getBean(DictionaryManager.class);
+		Dictionary dictModules = dictionaryManager.getDictionary(DICTIONARY_CATALOGS, true);
+		variables.put("modules", dictModules.toArray());
+	}catch(Exception ex){
+		
+	}
 	// 分页参数	
 	Pagination pagination = new Pagination();
 	
@@ -85,7 +88,6 @@
 	tableTmpl.getToolBar().addToolItem(importItem);
 	
 	variables.put("table", tableTmpl);
-	variables.put("modules", dictModules.toArray());
 	
 	PageRender render = new PageRender(getServletContext(), templateRoot, "/Admin/content.html", variables);
 	render.render(out);

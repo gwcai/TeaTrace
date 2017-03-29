@@ -143,6 +143,42 @@
 				</#if>
 			</tbody>
 		</table>
+		<#if table.pagination??>
+			<div class="col-xs-12 table-footer">
+				<form method="post" id="form-pagination">
+				<input type="hidden" name="size">
+				<input type="hidden" name="index">
+				<div class="col-xs-6">
+					<div>
+						<label>显示 
+							<select size="1" name="sample-table-2_length" aria-controls="sample-table-2" onchange="return submitPagination(0,$(this).val());">
+								<option value="10" <#if table.pagination.size==10>selected="selected"</#if>>10</option>
+								<option value="20" <#if table.pagination.size==20>selected="selected"</#if>>20</option>
+								<option value="50" <#if table.pagination.size==50>selected="selected"</#if>>50</option>
+								<option value="100" <#if table.pagination.size==100>selected="selected"</#if>>100</option>
+								<option value="${table.pagination.count}"<#if table.pagination.count==table.pagination.size>selected="selected"</#if>>全部(${table.pagination.count})</option>
+							</select> 条记录
+						</label>
+					</div>
+				</div>
+				<div class="col-xs-6">
+					<div class="dataTables_paginate paging_bootstrap">
+						<ul class="pagination">
+							<li class="prev <#if table.pagination.index==0>disabled</#if>"><a href="#" <#if table.pagination.index&gt;0>onclick="return submitPagination(0,${table.pagination.size?c});"</#if>><i class="fa fa-angle-double-left"></i></a></li>
+							<li class="prev <#if table.pagination.index==0>disabled</#if>"><a href="#" <#if table.pagination.index&gt;0>onclick="return submitPagination(${(table.pagination.index-1)?c},${table.pagination.size?c});"</#if>><i class="fa fa-angle-left"></i></a></li>
+							<#list 0..table.pagination.total-1 as no>
+								<li <#if no==table.pagination.index>class="active disabled"</#if>><a href="#" onclick="return submitPagination(${no?c},${table.pagination.size?c});">${no+1}</a></li>
+							</#list>
+							<li class="next <#if table.pagination.index+1==table.pagination.total>disabled</#if>">
+								<a href="#" <#if table.pagination.index+1&lt;table.pagination.total>onclick="return submitPagination(${(table.pagination.index+1)?c},${table.pagination.size?c});"</#if>><i class="fa fa-angle-right"></i></a></li>
+							<li class="next <#if table.pagination.index+1==table.pagination.total>disabled</#if>">
+								<a href="#" <#if table.pagination.index+1&lt;table.pagination.total>onclick="return submitPagination(${(table.pagination.total-1)?c},${table.pagination.size?c});"</#if>><i class="fa fa-angle-double-right"></i></a></li>
+						</ul>
+					</div>
+				</div>
+				</form>
+			</div>			
+			</#if>
 	</div>
 </div>
 
@@ -175,6 +211,12 @@ $(document).ready(function(){
 	if('' != '${queryArgs.nodeId!''}')
 		$("select option[value=${queryArgs.nodeId!''}]").prop('selected','selected');
 });
+
+function submitPagination(index,size) {
+	$("input[name='index']").val(index);
+	$("input[name='size']").val(size);
+	$("#form-pagination").submit();
+}
 
 function doAdd() {
 	window.location = "${webroot}/TEA/tea-trace-input.jsp?featureCode=menu.tea.info.input";

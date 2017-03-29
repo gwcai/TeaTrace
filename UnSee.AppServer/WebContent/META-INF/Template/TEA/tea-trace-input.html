@@ -219,8 +219,14 @@ var traceEnt = {
 	
 	function showPictures(){
 		$("#divpicture")[0].innerHTML = '';
-		if(null != traceEnt.pictureLink && traceEnt.pictureLink.length	 > 0){
-			var ids = traceEnt.pictureLink.split(',');
+		var pictureLink = '';
+		if(ifSaleNode){
+			pictureLink = saleEnt.pictureLink;
+		}else{
+			pictureLink = traceEnt.pictureLink;
+		}
+		if(null != pictureLink && pictureLink.length > 0){
+			var ids = pictureLink.split(',');
 			for(i=0;i<ids.length;i++){
 				$("#divpicture")[0].innerHTML += '<img id="addPicture"  data-id="'+ids[i]+'" src="${webroot}/service/UploadFile.action?id='+ids[i]+'" onclick="return doDelete('+ids[i]+');"/>'
 			}

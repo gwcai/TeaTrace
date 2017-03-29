@@ -42,12 +42,12 @@
 	
 	int pageSize,pageIndex;
 	try{
-		pageSize = Integer.parseInt(request.getParameter("pageSize"));
+		pageSize = Integer.parseInt(request.getParameter("size"));
 	}catch(Exception ex){
 		pageSize = 20;
 	}
 	try{
-		pageIndex = Integer.parseInt(request.getParameter("pageIndex"));
+		pageIndex = Integer.parseInt(request.getParameter("index"));
 	}catch(Exception ex){
 		pageIndex = 0;
 	}
@@ -61,8 +61,7 @@
 	tableTmpl.setTitle("节点信息管理");
 	tableTmpl.setSubTitle("茶叶节点信息查询");
 
-	if(!StringUtil.isNullOrEmpty(request.getParameter("batch"))){
-		if(!"6".equals(request.getParameter("nodeId"))){
+	if(!"6".equals(request.getParameter("nodeId"))){
 			queryMap.clear();
 			queryMap.put("objectCode", VIEW_CODE);
 			soe = (SysObjectsEntity)sos.getEntityByRequest(queryMap);
@@ -98,7 +97,6 @@
 					return sb.toString();
 				}
 			}, "Simple", rowBounds));
-		}
 	}
 	
 	pagination.setSize(pageSize);
