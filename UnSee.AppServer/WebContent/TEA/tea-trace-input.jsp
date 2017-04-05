@@ -30,8 +30,9 @@
 	variables.put("contentPage", "/TEA/tea-trace-input.html");
 	variables.put("importDlgTitle","上传相关图片");
 	variables.put("serviceTarget","upLoadPicture");
-	variables.put("queryArgs", RequestUtil.requestParameterToMap(request));
 	
+	Map queryArgs = new HashMap();
+	queryArgs.put("id",request.getParameter("id"));
 	String id = request.getParameter("id");
 	
 	TeaSaleEntity saleEntity = null;
@@ -40,9 +41,15 @@
 	if(!StringUtil.isNullOrEmpty(id)){
 		if("6".equalsIgnoreCase(request.getParameter("nodeId"))){
 			saleEntity = (TeaSaleEntity)TeaSaleService.getInstance().getEntity(id);
+			 queryArgs.put("nodeId","6");
 		}else{
 			traceEntity = (TeaTraceEntity)TeaTraceService.getInstance().getEntity(id);
+			if(null != traceEntity){
+				queryArgs.put("nodeId",String.valueOf(traceEntity.getNodeId()));
+			}
 		}
+	}else{
+		 queryArgs.put("orderId",request.getParameter("nodeId"));
 	}
 	
 	if(null == saleEntity){
@@ -52,8 +59,9 @@
 		traceEntity = new TeaTraceEntity();
 	}
 	variables.put("saleEnt", saleEntity);
-	variables.put("traceEnt", traceEntity);
-	
+	variables.put("traceEnt", traceEntity);	
+	variables.put("queryArgs", queryArgs);
+
 	try
 	{	
 		DictionaryManager dictionaryManager = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext()).getBean(DictionaryManager.class);

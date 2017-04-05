@@ -229,7 +229,11 @@ function doEdit(id){
 
 function doRemove(id){
 	if(confirm("确定删除该记录吗？(此操作不可恢复!)")){
-		$.post("${webroot}/service/TeaTrace.action?verb=remove",{id: id}, function(r){
+		var params = {id: id};
+		if($("#nodeId").val() == 6){
+			params.nodeId = '6';
+		}
+		$.post("${webroot}/service/TeaTrace.action?verb=remove",params, function(r){
 			if(r.success){
 				window.location = window.location;
 			} else {

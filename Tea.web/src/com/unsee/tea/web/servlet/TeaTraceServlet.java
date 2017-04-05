@@ -173,9 +173,15 @@ public class TeaTraceServlet extends RESTServlet{
 		Result result = new Result();
 		try{
 			String id = request.getParameter("id");	
+			String nodeId = request.getParameter("nodeId");
+			
 			if(StringUtil.isNullOrEmpty(id)) throw new Exception("参数错误");
-			TeaTraceService.getInstance().removeEntity(RequestUtil.requestParameterToMap(request));
-
+			
+			if("6".equalsIgnoreCase(nodeId)){
+				TeaSaleService.getInstance().removeEntity(RequestUtil.requestParameterToMap(request));
+			}else{
+				TeaTraceService.getInstance().removeEntity(RequestUtil.requestParameterToMap(request));
+			}
 			result.setSuccess(true);
 		}catch(Exception ex){
 			result.setMessage(ex.getMessage());

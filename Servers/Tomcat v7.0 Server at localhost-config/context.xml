@@ -37,6 +37,6 @@
 	<Resource name="jdbc/gaia" auth="Container" type="javax.sql.DataSource"
 		driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/gaia"
 		enablePing="true" username="root" password="2010"
-		maxActive="2" maxIdle="1" maxWait="3000" />
+		maxActive="20" maxIdle="20" maxWait="3000" />
 		
 </Context>
