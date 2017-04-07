@@ -49,7 +49,7 @@
 			}
 		}
 	}else{
-		 queryArgs.put("orderId",request.getParameter("nodeId"));
+		 queryArgs.put("nodeId",request.getParameter("nodeId"));
 	}
 	
 	if(null == saleEntity){
